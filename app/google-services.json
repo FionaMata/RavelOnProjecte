@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "713844823887",
+    "project_id": "ravelschool-bc44d",
+    "storage_bucket": "ravelschool-bc44d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:713844823887:android:d562152b9d863aef58d73a",
+        "android_client_info": {
+          "package_name": "com.mataecheverry.project_ravelry"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "713844823887-p0hsto8iohf0idf6kipthg8o7v01d4gp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mataecheverry.project_ravelry",
+            "certificate_hash": "a141924e0deecab6cd4b561117a9b87179f95bcb"
+          }
+        },
+        {
+          "client_id": "713844823887-n1iqrilqvinlo1l3v85kir0j3vj4kp1q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLLe7Pdq8rNtj87nYOIfeuUVGQBYQTTQU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "713844823887-n1iqrilqvinlo1l3v85kir0j3vj4kp1q.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
