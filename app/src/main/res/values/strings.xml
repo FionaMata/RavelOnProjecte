@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">Project_Ravelry</string>
+    <string name="home">Home</string>
+    <string name="patterns">Patterns</string>
+    <string name="favorites">Favorites</string>
+    <string name="projects">Projects</string>
+    <string name="shop">Shop</string>
+    <string name="uploadproject">UploadProject</string>
+    <string name="calendar">Calendar</string>
+    <string name="about">About</string>
+    <string name="search">Search</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
 </resources>
