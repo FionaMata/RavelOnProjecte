@@ -1,6 +1,9 @@
 package com.mataecheverry.project_ravelry.ui.pantalles
 
-import android.app.Application
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -30,24 +33,77 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.tasks.Task
 import com.mataecheverry.project_ravelry.MainActivity
 import com.mataecheverry.project_ravelry.R
+import com.mataecheverry.project_ravelry.dades.autenticacio.AuthManager
+import com.mataecheverry.project_ravelry.dades.autenticacio.AuthReply
+import com.mataecheverry.project_ravelry.ui.AppDisplay
+import kotlinx.coroutines.launch
 
 //Caldrà fer el procediment del login per open id aqui!
+@Preview
+@Composable
+fun PreviewLogin()
+{
+    AppDisplay {
+        PantallaLogin(
+            mainActivity = MainActivity(),
+            authManager = AuthManager(LocalContext.current),
+            goToRegister = { /*TODO*/ },
+            goToRecover = { /*TODO*/ },
+            goToStart = { /*TODO*/}
+        )
+    }
+}
 
 
 @Composable
-fun PantallaLogin(mainActivity: MainActivity) {
+fun PantallaLogin(
+    mainActivity: MainActivity,
+    authManager: AuthManager,
+    goToRegister: () -> Unit,
+    goToRecover: () -> Unit,
+    goToStart: () -> Unit,
+) {
+
+    var email by remember { mutableStateOf("") }
+    var password by remember {mutableStateOf("")}
+    var checked by remember { mutableStateOf(true) }
+    var error by remember { mutableStateOf(false) }
+    var errorMessege by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val area = rememberCoroutineScope()
+
+
+    val startForResult =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val intent = result.data
+                if (result.data != null) {
+                    val task: Task<GoogleSignInAccount> =
+                        GoogleSignIn.getSignedInAccountFromIntent(intent)
+                    if (task.isSuccessful)
+                        goToStart()
+                }
+            }
+        }
+
 
 
     Column(
@@ -90,9 +146,10 @@ fun PantallaLogin(mainActivity: MainActivity) {
                     label = { Text(text = "Correu electrònic") },
                     value = "",
                     visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     onValueChange = {
-
+                        email = it
+                        error = false
+                        errorMessege = ""
                     },
 
                     )
@@ -105,6 +162,9 @@ fun PantallaLogin(mainActivity: MainActivity) {
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     onValueChange = {
+                        password = it
+                        error = false
+                        errorMessege = ""
                     },
                 )
 
@@ -118,7 +178,7 @@ fun PantallaLogin(mainActivity: MainActivity) {
                         Text(text = "I Forgot my password :(",
                             Modifier
                                 .clickable {
-
+                                    goToRecover()
                                 }
                                 .padding(horizontal = 20.dp),
                             textDecoration = TextDecoration.Underline
@@ -128,12 +188,22 @@ fun PantallaLogin(mainActivity: MainActivity) {
                             Modifier.padding(horizontal = 5.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Checkbox(checked = false, onCheckedChange = {})
+                            Checkbox(checked = checked, onCheckedChange = {checked = it})
                             Text("Remember me")
                         }
                     }
                     Button(
-                        onClick = { /*TODO*/ },
+                        onClick = {
+                                  area.launch {
+                                      emailAndPasswordLogin(
+                                          authManager,
+                                          email,
+                                          password,
+                                          goToStart
+                                      )
+                                      goToStart()
+                                  }
+                        },
                         colors = ButtonColors(
                             containerColor = Color(0XFF97EFE3),
                             contentColor = Color(0XFF000000),
@@ -145,7 +215,13 @@ fun PantallaLogin(mainActivity: MainActivity) {
                     }
                 }
                 HorizontalDivider(Modifier.padding(10.dp))
-                BotoXXSS(onClick = { /*TODO*/ }, icon = R.drawable.google, nomXarxa = "Google")
+                BotoXXSS(
+                    onClick = {
+                              authManager.iniciDeSessioAmbGoogle(startForResult)
+                              },
+                    icon = R.drawable.google,
+                    nomXarxa = "Google")
+
                 BotoXXSS(
                     onClick = { /*TODO*/ },
                     icon = R.drawable.logotipodeopenid,
@@ -218,6 +294,22 @@ fun BotoXXSS(onClick: () -> Unit, icon: Int, nomXarxa: String) {
             Spacer(modifier = Modifier.width(8.dp))
             Text(text = "Sign in with $nomXarxa", color = MaterialTheme.colorScheme.onBackground)
             click = true
+        }
+    }
+}
+
+//Suspend functions:
+
+suspend fun emailAndPasswordLogin(
+    authManager: AuthManager,
+    email: String,
+    password: String,
+    goToStart: () -> Unit,
+){
+    if (email.isNotEmpty() && password.isNotEmpty()){
+        when (authManager.iniciaUsuariAmbCorreuIMotDePas(email, password)) {
+            is AuthReply.Success -> goToStart()
+            is AuthReply.Failed ->  {}
         }
     }
 }

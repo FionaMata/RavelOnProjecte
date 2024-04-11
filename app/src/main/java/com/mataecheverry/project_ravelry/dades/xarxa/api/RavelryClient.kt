@@ -1,7 +1,5 @@
-package com.mataecheverry.project_ravelry.dades.xarxa
+package com.mataecheverry.project_ravelry.dades.xarxa.api
 
-import android.accounts.AccountManager
-import android.os.Bundle
 import com.mataecheverry.project_ravelry.dades.autenticacio.CLIENT_ID
 import com.mataecheverry.project_ravelry.dades.autenticacio.CLIENT_SECRET
 import com.mataecheverry.project_ravelry.dades.autenticacio.URL_API

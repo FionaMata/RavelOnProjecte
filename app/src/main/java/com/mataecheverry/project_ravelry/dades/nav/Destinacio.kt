@@ -74,11 +74,11 @@ sealed class Destinacio(
 
 }
 
-enum class NavArguments(val key: String, var type: NavType<*>){
+enum class NavArguments(val key: String, var tipus: NavType<*>){
     IdDetail("IdDetail", NavType.StringType);
 
     fun toNavArgument(): NamedNavArgument{
-        return navArgument(key) {type}
+        return navArgument(key) {type = tipus}
     }
 
 }

@@ -2,22 +2,14 @@ package com.mataecheverry.project_ravelry.dades.autenticacio
 
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.Firebase
 import com.google.firebase.auth.AuthCredential
-import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.OAuthCredential
-import com.google.firebase.auth.OAuthProvider
-import com.google.firebase.auth.OAuthProvider.getCredential
 import com.google.firebase.auth.auth
-import com.google.firebase.auth.oAuthCredential
-import com.mataecheverry.project_ravelry.MainActivity
 import kotlinx.coroutines.tasks.await
 
 
