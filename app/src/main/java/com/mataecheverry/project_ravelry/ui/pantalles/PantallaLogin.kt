@@ -1,8 +1,6 @@
 package com.mataecheverry.project_ravelry.ui.pantalles
 
-import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -47,14 +45,15 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.GoogleAuthProvider
 import com.mataecheverry.project_ravelry.MainActivity
 import com.mataecheverry.project_ravelry.R
 import com.mataecheverry.project_ravelry.dades.autenticacio.AuthManager
 import com.mataecheverry.project_ravelry.dades.autenticacio.AuthReply
+import com.mataecheverry.project_ravelry.dades.autenticacio.LoggedInUser
 import com.mataecheverry.project_ravelry.ui.AppDisplay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 //Caldrà fer el procediment del login per open id aqui!
 @Preview
@@ -67,7 +66,7 @@ fun PreviewLogin()
             authManager = AuthManager(LocalContext.current),
             goToRegister = { /*TODO*/ },
             goToRecover = { /*TODO*/ },
-            goToStart = { /*TODO*/}
+            goToHome = { /*TODO*/}
         )
     }
 }
@@ -79,11 +78,11 @@ fun PantallaLogin(
     authManager: AuthManager,
     goToRegister: () -> Unit,
     goToRecover: () -> Unit,
-    goToStart: () -> Unit,
+    goToHome: () -> Unit,
 ) {
 
-    var email by remember { mutableStateOf("") }
-    var password by remember {mutableStateOf("")}
+    var email by remember { mutableStateOf(LoggedInUser.userMail) }
+    var password by remember {mutableStateOf(LoggedInUser.userPassword)}
     var checked by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf(false) }
     var errorMessege by remember { mutableStateOf("") }
@@ -91,18 +90,40 @@ fun PantallaLogin(
     val area = rememberCoroutineScope()
 
 
-    val startForResult =
-        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                val intent = result.data
-                if (result.data != null) {
-                    val task: Task<GoogleSignInAccount> =
-                        GoogleSignIn.getSignedInAccountFromIntent(intent)
-                    if (task.isSuccessful)
-                        goToStart()
+
+    val launcherIniciDeSessioAmbGoogle = rememberLauncherForActivityResult(
+        //Llencem un activityForResult
+        contract = ActivityResultContracts.StartActivityForResult()) { result ->
+        //GoogleSignIn.getSignedInAccountFromIntent(result.data)) obre una activity de Google on
+        //L'usuari es valida, i ens retornarà una resposta que contindrà el compte de google o un error
+        when(val reply = authManager.manageGoogleLoginResults(GoogleSignIn.getSignedInAccountFromIntent(result.data))) {
+            is AuthReply.Success -> {
+                //Del compte de google volem les credencials, per tal de poder iniciar sessió amb Firebase
+                val credentials = GoogleAuthProvider.getCredential(reply.dades.idToken, null)
+                LoggedInUser.initialize(credentials)
+                LoggedInUser.userToken = reply.dades.idToken.toString()
+                area.launch {
+                    val usuariFirebase = authManager.iniciDeSessioAmbCredencials(credentials)
+                    if (usuariFirebase != null){
+                        goToHome()
+                    }
                 }
             }
+            is AuthReply.Failed -> {
+                error = true
+                errorMessege = reply.errorMessage
+            }
+            else -> {
+                error = true
+                errorMessege = "Unexpected error."
+            }
         }
+    }
+
+
+
+
+
 
 
 
@@ -147,7 +168,7 @@ fun PantallaLogin(
                     value = "",
                     visualTransformation = PasswordVisualTransformation(),
                     onValueChange = {
-                        email = it
+                        LoggedInUser.userMail = it
                         error = false
                         errorMessege = ""
                     },
@@ -162,7 +183,7 @@ fun PantallaLogin(
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     onValueChange = {
-                        password = it
+                        LoggedInUser.userPassword = it
                         error = false
                         errorMessege = ""
                     },
@@ -199,9 +220,9 @@ fun PantallaLogin(
                                           authManager,
                                           email,
                                           password,
-                                          goToStart
+                                          goToHome
                                       )
-                                      goToStart()
+                                      goToHome()
                                   }
                         },
                         colors = ButtonColors(
@@ -217,7 +238,7 @@ fun PantallaLogin(
                 HorizontalDivider(Modifier.padding(10.dp))
                 BotoXXSS(
                     onClick = {
-                              authManager.iniciDeSessioAmbGoogle(startForResult)
+                              authManager.iniciDeSessioAmbGoogle(launcherIniciDeSessioAmbGoogle)
                               },
                     icon = R.drawable.google,
                     nomXarxa = "Google")
@@ -240,7 +261,7 @@ fun PantallaLogin(
                     Row(verticalAlignment = Alignment.Bottom,
                         horizontalArrangement = Arrangement.End){
                         Button(
-                            onClick = { /*TODO*/ },
+                            onClick = { goToRegister() },
                             colors = ButtonColors(
                                 containerColor = Color(0XFF97EFE3),
                                 contentColor = Color(0XFF000000),
@@ -307,8 +328,15 @@ suspend fun emailAndPasswordLogin(
     goToStart: () -> Unit,
 ){
     if (email.isNotEmpty() && password.isNotEmpty()){
-        when (authManager.iniciaUsuariAmbCorreuIMotDePas(email, password)) {
-            is AuthReply.Success -> goToStart()
+        when ( val reply = authManager.iniciaUsuariAmbCorreuIMotDePas(email, password)) {
+            is AuthReply.Success -> {
+                goToStart()
+                val firebaseUser = reply.dades
+                val idToken = firebaseUser?.getIdToken(true)?.await()
+                LoggedInUser.initialize(email,password)
+                LoggedInUser.userToken = idToken?.token.toString()
+                goToStart()
+            }
             is AuthReply.Failed ->  {}
         }
     }

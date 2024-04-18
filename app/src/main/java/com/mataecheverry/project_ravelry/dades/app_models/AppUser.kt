@@ -1,6 +1,7 @@
 package com.mataecheverry.project_ravelry.dades.app_models
 
-class AppUser() {
+class AppUser(){
+
     var id: Int = 0
     var about_me_html: String = ""
     var fave_colors : String = ""

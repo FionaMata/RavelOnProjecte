@@ -4,8 +4,11 @@ import android.content.Context
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -83,6 +86,15 @@ class AuthManager (private val context: Context){
     fun iniciDeSessioAmbGoogle(laucherIniciDeSessioAmbGoogle: ActivityResultLauncher<Intent>) {
         val signInIntent = googleClient.signInIntent
         laucherIniciDeSessioAmbGoogle.launch(signInIntent)
+    }
+
+    fun manageGoogleLoginResults(task: Task<GoogleSignInAccount>): AuthReply<GoogleSignInAccount>? {
+        return try {
+            val compte = task.getResult(ApiException::class.java)
+            AuthReply.Success(compte)
+        } catch (e: ApiException) {
+            AuthReply.Failed(e.message ?: "No s'ha pogut iniciar sessió amb Google")
+        }
     }
     //endregion
 

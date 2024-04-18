@@ -15,6 +15,7 @@ enum class NavigationCat(
 ){
     Login ("Login", R.drawable.user, R.string.login),
     Register("Registre", R.drawable.user, R.string.register),
+    Recover("Recover", R.drawable.typeselectedstateenabled, R.string.recover),
     Home("Home", R.drawable.home, R.string.home),
     Search("Search", R.drawable.search, R.string.search),
     Patterns("Patterns", R.drawable.fakeyarn, R.string.patterns),
@@ -23,6 +24,7 @@ enum class NavigationCat(
     Shops("Shops", R.drawable.shop, R.string.shop),
     UploadProject("UploadProject", R.drawable.plus, R.string.uploadproject),
     Calendar("Calendar", R.drawable.calendar, R.string.calendar),
+    Profile("Profile", R.drawable.user, R.string.profile),
     About("About", R.drawable.about, R.string.about)
 }
 
@@ -40,9 +42,9 @@ sealed class Destinacio(
             .joinToString("/")
     }
 
-    object Login: Destinacio(NavigationCat.Home.previousPath+"/Start")
-    object Register: Destinacio(NavigationCat.Search.previousPath+"/Register")
-    object Recover: Destinacio(NavigationCat.Search.previousPath+"/Recover")
+    object Login: Destinacio(NavigationCat.Login.previousPath+"/Start")
+    object Register: Destinacio(NavigationCat.Login.previousPath+"/Register")
+    object Recover: Destinacio(NavigationCat.Login.previousPath+"/Recover")
     object Home: Destinacio(NavigationCat.Home.previousPath+"/Start")
     object Search: Destinacio(NavigationCat.Search.previousPath+"/Start")
     object Patterns: Destinacio(NavigationCat.Patterns.previousPath+"/Start")
@@ -71,6 +73,7 @@ sealed class Destinacio(
     }
     object UploadProject: Destinacio(NavigationCat.UploadProject.previousPath+"/Start")
     object About: Destinacio(NavigationCat.About.previousPath+"/Start")
+    object Profile: Destinacio(NavigationCat.Profile.previousPath+"/Profile")
 
 }
 

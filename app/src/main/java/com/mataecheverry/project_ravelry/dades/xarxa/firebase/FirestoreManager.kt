@@ -1,4 +1,6 @@
 package com.mataecheverry.project_ravelry.dades.xarxa.firebase
 
-class FirestoreManager () {
+import android.content.Context
+
+class FirestoreManager(current: Context) {
 }

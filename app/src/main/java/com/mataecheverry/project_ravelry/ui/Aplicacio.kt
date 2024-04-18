@@ -1,16 +1,19 @@
 package com.mataecheverry.project_ravelry.ui
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,19 +36,19 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import coil.compose.AsyncImage
+import com.mataecheverry.project_ravelry.R
 import com.mataecheverry.project_ravelry.dades.app_models.AppUser
 import com.mataecheverry.project_ravelry.dades.nav.Destinacio
 import com.mataecheverry.project_ravelry.dades.nav.NavigationCat
@@ -54,6 +57,7 @@ import com.mataecheverry.project_ravelry.ui.theme.Project_RavelryTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+//region llistes
 val displaysWithouthDrawer = listOf(
     Destinacio.Login.genericPath,
     Destinacio.Register.genericPath,
@@ -76,6 +80,19 @@ val displaysWithDrawer = listOf(
     Destinacio.CalendarDetails.genericPath,
     Destinacio.About.genericPath
 )
+
+val displaysWithBottomAppBar = listOf(
+    Destinacio.Home,
+    Destinacio.Patterns,
+    Destinacio.PatternDetails,
+    Destinacio.Projects,
+    Destinacio.ProjectDetails,
+    Destinacio.Profile
+)
+
+//endregion
+
+
 @Composable
 fun AppDisplay (content: @Composable () -> Unit){
     Project_RavelryTheme {
@@ -89,10 +106,9 @@ fun AppDisplay (content: @Composable () -> Unit){
 }
 
 
-@Preview
 @Composable
 fun Aplicacio(content: @Composable ()-> Unit = {Text ("")}){
-    val controladorDeNavegacio = rememberNavController()
+        val controladorDeNavegacio = rememberNavController()
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
     var estatDrawer = rememberDrawerState(initialValue = DrawerValue.Closed)
     val navBackStackEntry by controladorDeNavegacio.currentBackStackEntryAsState()
@@ -115,7 +131,8 @@ fun RavelryScaffold(
     appUser: AppUser
 ){
     var topAppBarTitle = ""
-    /**Posar TITOLS ADEQUATS A TRAVÉS DE RUTES*/
+    val currentScreen by remember { mutableStateOf<Destinacio>(Destinacio.Home) }
+
     when (currentPath){
         Destinacio.Home.genericPath -> topAppBarTitle = stringResource(NavigationCat.Home.title)
         Destinacio.Favorites.genericPath -> topAppBarTitle = stringResource(NavigationCat.Favorites.title)
@@ -124,7 +141,8 @@ fun RavelryScaffold(
         Destinacio.Shops.genericPath -> topAppBarTitle = stringResource(NavigationCat.Shops.title)
         Destinacio.Register.genericPath -> topAppBarTitle = stringResource(NavigationCat.Register.title)
     }
-    
+
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -163,14 +181,76 @@ fun RavelryScaffold(
                 }
             ) },
         bottomBar = {
-            BottomAppBar (
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.primary,
-            ){Text(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                text = "AQUI BOTONS LUPA I +")
+            if (displaysWithBottomAppBar.contains(currentScreen)){
+                BottomAppBar (
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.primary,
+                    contentPadding = BottomAppBarDefaults.ContentPadding,
+                ){
+                    Row(horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+
+                    ){
+                        when(currentScreen) {
+                            Destinacio.Home -> {
+                                Icon(
+                                    painterResource(id = R.drawable.search),
+                                    contentDescription = "Icona d'una lupa :)",
+                                    modifier = Modifier
+                                        .size(25.dp))
+                                Icon(
+                                    painterResource(id = R.drawable.plus),
+                                    contentDescription = "Icona d'un plus",
+                                    modifier = Modifier
+                                        .size(25.dp))
+                            }
+                            Destinacio.Patterns -> {
+                                Icon(
+                                    painterResource(id = R.drawable.search),
+                                    contentDescription = "Icona d'una lupa :)")
+                            }
+                            Destinacio.PatternDetails -> {
+                                Icon(
+                                    painterResource(id = R.drawable.home),
+                                    contentDescription = "Icona d'una casa")
+                                Icon(
+                                    painterResource(id = R.drawable.heart),
+                                    contentDescription = "Icona d'una lupa :)")
+                                Icon(
+                                    painterResource(id = R.drawable.read),
+                                    contentDescription = "Read Icon")
+                            }
+                            Destinacio.Projects -> {
+                                Icon(
+                                    painterResource(id = R.drawable.home),
+                                    contentDescription = "Read Icon")
+                                Icon(
+                                    painterResource(id = R.drawable.search),
+                                    contentDescription = "Magnifying glass")
+                            }
+                            Destinacio.ProjectDetails -> {
+                                Icon(
+                                    painterResource(id = R.drawable.home),
+                                    contentDescription = "Home Icon")
+                                Icon(
+                                    painterResource(id = R.drawable.search),
+                                    contentDescription = "Magnifying glass")
+                                Icon(
+                                    painterResource(id = R.drawable.heart),
+                                    contentDescription = "Favorite Icon")
+                            }
+                            Destinacio.Profile -> {
+                                Icon(
+                                    painterResource(id = R.drawable.share),
+                                    contentDescription = "Share icon")
+                            }
+
+                            else -> {}
+                        }
+                    }
+                }
+
             }
         },
         snackbarHost = {
@@ -233,21 +313,22 @@ fun RavelryDrawer(
                 drawerShape = ShapeDefaults.Small, //fa referència a la mida del corner radius
                 drawerContainerColor = MaterialTheme.colorScheme.secondaryContainer,
                 drawerContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                drawerTonalElevation = 5.dp,
-                windowInsets = WindowInsets(left = 24.dp, right = 24.dp, top = 48.dp) // És el padding
+                drawerTonalElevation = 15.dp,
+                windowInsets = WindowInsets(left = 35.dp, right = 35.dp, top = 48.dp) // És el padding
             ){
-                AsyncImage (
-                    //Aqui ha d'anar la imatge d'usuari. tirarem d'un async de moment
-                   model = appUser.large_photo_url,
-                    contentDescription = "User selected profile picture.",
-                    modifier = Modifier.fillMaxWidth(),
-                    contentScale = ContentScale.FillWidth)
-                Spacer (Modifier.height(48.dp))
+//                AsyncImage (
+//                    //Aqui ha d'anar la imatge d'usuari. tirarem d'un async de moment
+//                    model = appUser.large_photo_url,
+//                    contentDescription = "User selected profile picture.",
+//                    modifier = Modifier.fillMaxWidth()
+//                        .clip(RoundedCornerShape(50.dp))
+//                        .weight(0.2F))
+                Spacer (Modifier.height(10.dp))
                 HorizontalDivider(color = MaterialTheme.colorScheme.onSecondaryContainer,modifier= Modifier.height(15.dp))
-                Spacer (Modifier.height(48.dp))
-                NavigationCat.entries.forEach {
+                Spacer (Modifier.height(10.dp))
+                NavigationCat.entries.forEach(){
                     NavigationDrawerItem  (
-                        label = { Text(it.title.toString()) },
+                        label = { Text(it.previousPath) },
                         selected = rutaActual.contains(it.previousPath),
                         //icon = {Icon (imageVector = it.icon, it.title)},
                         onClick = {
@@ -270,7 +351,6 @@ fun RavelryDrawer(
                             selectedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
                             selectedIconColor = MaterialTheme.colorScheme.onTertiaryContainer,
                             selectedTextColor = MaterialTheme.colorScheme.onTertiaryContainer),
-                        badge = {Icon(imageVector = Icons.Default.ArrowBack, null)},
                         shape = ShapeDefaults.Medium
                     )
                 }
