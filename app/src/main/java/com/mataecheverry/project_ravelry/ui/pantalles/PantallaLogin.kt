@@ -50,7 +50,7 @@ import com.mataecheverry.project_ravelry.MainActivity
 import com.mataecheverry.project_ravelry.R
 import com.mataecheverry.project_ravelry.dades.autenticacio.AuthManager
 import com.mataecheverry.project_ravelry.dades.autenticacio.AuthReply
-import com.mataecheverry.project_ravelry.dades.autenticacio.LoggedInUser
+import com.mataecheverry.project_ravelry.models.app_models.LoggedInUser
 import com.mataecheverry.project_ravelry.ui.AppDisplay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -81,30 +81,28 @@ fun PantallaLogin(
     goToHome: () -> Unit,
 ) {
 
-    var email by remember { mutableStateOf(LoggedInUser.userMail) }
-    var password by remember {mutableStateOf(LoggedInUser.userPassword)}
+
+    var email by remember { mutableStateOf("") }
+    var password by remember {mutableStateOf("")}
     var checked by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf(false) }
     var errorMessege by remember { mutableStateOf("") }
     val context = LocalContext.current
     val area = rememberCoroutineScope()
 
-
-
     val launcherIniciDeSessioAmbGoogle = rememberLauncherForActivityResult(
         //Llencem un activityForResult
         contract = ActivityResultContracts.StartActivityForResult()) { result ->
-        //GoogleSignIn.getSignedInAccountFromIntent(result.data)) obre una activity de Google on
+        GoogleSignIn.getSignedInAccountFromIntent(result.data) //obre una activity de Google on
         //L'usuari es valida, i ens retornarà una resposta que contindrà el compte de google o un error
         when(val reply = authManager.manageGoogleLoginResults(GoogleSignIn.getSignedInAccountFromIntent(result.data))) {
             is AuthReply.Success -> {
                 //Del compte de google volem les credencials, per tal de poder iniciar sessió amb Firebase
                 val credentials = GoogleAuthProvider.getCredential(reply.dades.idToken, null)
-                LoggedInUser.initialize(credentials)
-                LoggedInUser.userToken = reply.dades.idToken.toString()
                 area.launch {
                     val usuariFirebase = authManager.iniciDeSessioAmbCredencials(credentials)
                     if (usuariFirebase != null){
+                        LoggedInUser.user_token = reply.dades.idToken.toString()
                         goToHome()
                     }
                 }
@@ -168,7 +166,7 @@ fun PantallaLogin(
                     value = "",
                     visualTransformation = PasswordVisualTransformation(),
                     onValueChange = {
-                        LoggedInUser.userMail = it
+                        LoggedInUser.user_mail = it
                         error = false
                         errorMessege = ""
                     },
@@ -183,7 +181,7 @@ fun PantallaLogin(
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     onValueChange = {
-                        LoggedInUser.userPassword = it
+                        LoggedInUser.user_password = it
                         error = false
                         errorMessege = ""
                     },
@@ -328,13 +326,12 @@ suspend fun emailAndPasswordLogin(
     goToStart: () -> Unit,
 ){
     if (email.isNotEmpty() && password.isNotEmpty()){
-        when ( val reply = authManager.iniciaUsuariAmbCorreuIMotDePas(email, password)) {
+        when ( val reply = authManager.signInwithEmailAndPassword(email, password)) {
             is AuthReply.Success -> {
                 goToStart()
                 val firebaseUser = reply.dades
                 val idToken = firebaseUser?.getIdToken(true)?.await()
-                LoggedInUser.initialize(email,password)
-                LoggedInUser.userToken = idToken?.token.toString()
+                LoggedInUser.user_token = idToken?.token.toString()
                 goToStart()
             }
             is AuthReply.Failed ->  {}

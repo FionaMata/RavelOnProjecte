@@ -1,5 +1,7 @@
 package com.mataecheverry.project_ravelry.ui
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.rounded.ArrowBack
@@ -41,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -48,8 +52,8 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.mataecheverry.project_ravelry.R
-import com.mataecheverry.project_ravelry.dades.app_models.AppUser
 import com.mataecheverry.project_ravelry.dades.nav.Destinacio
 import com.mataecheverry.project_ravelry.dades.nav.NavigationCat
 import com.mataecheverry.project_ravelry.dades.nav.NavigationGraph
@@ -92,7 +96,6 @@ val displaysWithBottomAppBar = listOf(
 
 //endregion
 
-
 @Composable
 fun AppDisplay (content: @Composable () -> Unit){
     Project_RavelryTheme {
@@ -105,21 +108,20 @@ fun AppDisplay (content: @Composable () -> Unit){
     }
 }
 
-
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun Aplicacio(content: @Composable ()-> Unit = {Text ("")}){
-        val controladorDeNavegacio = rememberNavController()
+    val controladorDeNavegacio = rememberNavController()
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
     var estatDrawer = rememberDrawerState(initialValue = DrawerValue.Closed)
     val navBackStackEntry by controladorDeNavegacio.currentBackStackEntryAsState()
     val rutaActual = navBackStackEntry?.destination?.route ?: ""
     val snackbarHostState = remember{ SnackbarHostState()}
-    val appUser = AppUser()
-
-    RavelryScaffold(controladorDeNavegacio, coroutineScope, estatDrawer, rutaActual, snackbarHostState, appUser)
+    RavelryScaffold(controladorDeNavegacio, coroutineScope, estatDrawer, rutaActual, snackbarHostState)
 
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RavelryScaffold(
@@ -128,7 +130,6 @@ fun RavelryScaffold(
     estatDrawer: DrawerState,
     currentPath: String,
     snackbarHostState: SnackbarHostState,
-    appUser: AppUser
 ){
     var topAppBarTitle = ""
     val currentScreen by remember { mutableStateOf<Destinacio>(Destinacio.Home) }
@@ -289,12 +290,12 @@ fun RavelryScaffold(
             coroutineScope,
             estatDrawer,
             modifier = Modifier.padding(paddingValues),
-            rutaActual = currentPath,
-            appUser = appUser)
+            rutaActual = currentPath)
     }
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun RavelryDrawer(
     navigationController: NavHostController = rememberNavController(),
@@ -302,7 +303,6 @@ fun RavelryDrawer(
     estatDrawer: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
     modifier: Modifier,
     rutaActual: String,
-    appUser: AppUser
 
 ){
     ModalNavigationDrawer(
@@ -316,13 +316,13 @@ fun RavelryDrawer(
                 drawerTonalElevation = 15.dp,
                 windowInsets = WindowInsets(left = 35.dp, right = 35.dp, top = 48.dp) // És el padding
             ){
-//                AsyncImage (
-//                    //Aqui ha d'anar la imatge d'usuari. tirarem d'un async de moment
-//                    model = appUser.large_photo_url,
-//                    contentDescription = "User selected profile picture.",
-//                    modifier = Modifier.fillMaxWidth()
-//                        .clip(RoundedCornerShape(50.dp))
-//                        .weight(0.2F))
+                AsyncImage (
+                    //Aqui ha d'anar la imatge d'usuari. tirarem d'un async de moment
+                    model = {},
+                    contentDescription = "User selected profile picture.",
+                    modifier = Modifier.fillMaxWidth()
+                        .clip(RoundedCornerShape(50.dp))
+                        .weight(0.2F))
                 Spacer (Modifier.height(10.dp))
                 HorizontalDivider(color = MaterialTheme.colorScheme.onSecondaryContainer,modifier= Modifier.height(15.dp))
                 Spacer (Modifier.height(10.dp))

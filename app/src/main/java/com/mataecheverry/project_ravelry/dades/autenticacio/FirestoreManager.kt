@@ -1,11 +1,11 @@
 package com.mataecheverry.project_ravelry.dades.autenticacio
 
 import com.google.firebase.firestore.FirebaseFirestore
-import com.mataecheverry.project_ravelry.dades.app_models.AppPattern
-import com.mataecheverry.project_ravelry.dades.app_models.AppPatternAuthor
-import com.mataecheverry.project_ravelry.dades.app_models.AppProject
-import com.mataecheverry.project_ravelry.dades.app_models.AppUser
-import com.mataecheverry.project_ravelry.dades.app_models.AppYarn
+import com.mataecheverry.project_ravelry.models.app_models.AppPattern
+import com.mataecheverry.project_ravelry.models.app_models.AppPatternAuthor
+import com.mataecheverry.project_ravelry.models.app_models.AppProject
+import com.mataecheverry.project_ravelry.models.app_models.AppUser
+import com.mataecheverry.project_ravelry.models.app_models.AppYarn
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -123,7 +123,7 @@ class FirestoreManager() {
         }
     }
 
-    fun getPattern():
+    fun getPatternFlow():
             Flow<List<AppPattern>> = callbackFlow {
         val patternRef = firestore.collection(PATTERNS)
             .orderBy("id")

@@ -1,6 +1,13 @@
 package com.mataecheverry.project_ravelry.dades.nav
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -15,12 +22,17 @@ import com.mataecheverry.project_ravelry.ui.pantalles.PantallaHome
 import com.mataecheverry.project_ravelry.ui.pantalles.PantallaLogin
 import com.mataecheverry.project_ravelry.ui.pantalles.PantallaRegistry
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NavigationGraph (
     navigationController: NavHostController = rememberNavController()) {
     val authManager = AuthManager(LocalContext.current)
     val firestoreManager = FirestoreManager(LocalContext.current)
-    val user: FirebaseUser? = authManager.getUser()
+    var user: FirebaseUser? by remember { mutableStateOf<FirebaseUser?>(null) }
+    LaunchedEffect(key1 = Unit) {
+        user = authManager.getUser()
+
+    }
 
     //region variables:
 
@@ -52,10 +64,12 @@ fun NavigationGraph (
     //endregion
 
 
-    NavHost(
-        navController = navigationController,
-        startDestination = if (user == null) NavigationCat.Login.previousPath
-        else NavigationCat.Home.previousPath
+    NavHost(navController = navigationController,
+        startDestination = if (user == null)
+                                NavigationCat.Login.previousPath
+                            else
+                                NavigationCat.Home.previousPath
+
     ) {
 
         navigation(
@@ -65,7 +79,7 @@ fun NavigationGraph (
             composable(
                 route = Destinacio.Home.genericPath
             ){
-                PantallaHome(authManager, goToLogin,firestoreManager)
+                PantallaHome(authManager, goToLogin, firestoreManager, onClick ={})
             }
         }
 
@@ -83,7 +97,7 @@ fun NavigationGraph (
                 //PantallaRecover(authManager, go)
             }
             composable(route = Destinacio.Home.genericPath){
-                PantallaHome(authManager, goToLogin, firestoreManager)
+                PantallaHome(authManager, goToLogin, firestoreManager, onClick = {})
             }
         }
 

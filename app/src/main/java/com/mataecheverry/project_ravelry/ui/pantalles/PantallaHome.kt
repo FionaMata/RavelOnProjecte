@@ -1,12 +1,15 @@
 package com.mataecheverry.project_ravelry.ui.pantalles
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -14,6 +17,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -28,9 +32,12 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.mataecheverry.project_ravelry.dades.autenticacio.AuthManager
 import com.mataecheverry.project_ravelry.dades.xarxa.firebase.FirestoreManager
+import com.mataecheverry.project_ravelry.models.app_models.AppPattern
 import com.mataecheverry.project_ravelry.ui.AppDisplay
+import com.mataecheverry.project_ravelry.ui.viewmodels.ViewModelHome
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview()
 @Composable
 private fun HomePreview() {
@@ -38,17 +45,31 @@ private fun HomePreview() {
         PantallaHome(
             authManager = AuthManager(LocalContext.current),
             goToLogin = {},
-            firestoreManager = FirestoreManager(LocalContext.current)
+            firestoreManager = FirestoreManager(LocalContext.current),
+            onClick = {}
         )
     }
 }
 
+
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun PantallaHome(authManager: AuthManager, goToLogin:() -> Unit, firestoreManager: FirestoreManager) {
+fun PantallaHome(
+    authManager: AuthManager,
+    goToLogin:() -> Unit,
+    firestoreManager: FirestoreManager,
+    viewModel: ViewModelHome = androidx.lifecycle.viewmodel.compose.viewModel(),
+    onClick: (String) -> Unit)
+{
+
+    val state = viewModel.state.collectAsState()
+    val patterns = state.value.patterns
 
     //var selected = remember {mutableStateOf(true)}
     var tabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf("Debut Patterns", "Hot Right Now", "You've Looked At...")
+
+
 
     Column(
         Modifier
@@ -65,45 +86,55 @@ fun PantallaHome(authManager: AuthManager, goToLogin:() -> Unit, firestoreManage
             }
         }
         when (tabIndex){
-            //0 -> Carregar contingut DebutPatterns
-            //1 -> Carregar contingut HotRightNow
+            0 -> { viewModel.loadHotRightNowPatterns()}
+            1 -> { viewModel.loadDebutPatterns()}
             //2 -> Carregar contingut YouveLookedAt
         }
 
+        LazyColumn(){
+            items(patterns){
+                //Log.d("CLICK","NO FUNCIONA ACCES")
+                OutlinedRavelCard(it, onClick, viewModel)
+            }
+        }
+
     }
-
-
 }
 
 
 
-@Preview
 @Composable
-fun OutlinedRavelCard() {
+fun OutlinedRavelCard(appPattern: AppPattern, onClick: (String)-> Unit, viewModel: ViewModelHome) {
+
     OutlinedCard(
+        onClick = {onClick(appPattern.id.toString())},
         Modifier
-            .requiredSize(200.dp)
-            .background(MaterialTheme.colorScheme.primaryContainer),
-        border = BorderStroke(1.dp, Color.Black),
-        elevation = CardDefaults.outlinedCardElevation(10.dp, 0.dp, 15.dp, 14.dp)
-        ) {
-        AsyncImage(
-           model = "https://en.wikipedia.org/wiki/Yarn#/media/File:Yarn_at_Folklife_-_Stierch.jpg",//project.first_photo,
-            contentDescription = "Project thumbnail",
-            modifier = Modifier.size(150.dp)
-        )
-        Column(Modifier.padding(horizontal = 15.dp)){
-            Text(text="project.patternName",
-                color = Color(0XFF19444D),
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
+            .size(width = 240.dp, height = 150.dp)
+            .background(MaterialTheme.colorScheme.primaryContainer)
+            .padding(16.dp),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.outlinedCardColors(MaterialTheme.colorScheme.primaryContainer),
+        border = BorderStroke(1.dp, Color.Transparent),
+        elevation = CardDefaults.outlinedCardElevation(10.dp, 0.dp, 15.dp, 14.dp),
+        content = {
+            AsyncImage(
+                model = appPattern.photos,  //0 = thumbnail
+                contentDescription = "Project thumbnail",
+                modifier = Modifier.size(150.dp)
             )
-            Text("project.user.username",
-                color = Color(0XFF19444D),
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Light)
+            Column(Modifier.padding(horizontal = 15.dp))
+            {
+                Text(text= appPattern.name,
+                    color = Color(0XFF19444D),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(text = appPattern.pattern_author.name,
+                    color = Color(0XFF19444D),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Light,
+                )
+            }
         }
-
-    }
-
+    )
 }

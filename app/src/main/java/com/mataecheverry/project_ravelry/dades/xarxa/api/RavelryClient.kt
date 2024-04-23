@@ -1,5 +1,6 @@
 package com.mataecheverry.project_ravelry.dades.xarxa.api
 
+import android.util.Log
 import com.google.gson.GsonBuilder
 import com.mataecheverry.project_ravelry.dades.autenticacio.CLIENT_ID
 import com.mataecheverry.project_ravelry.dades.autenticacio.CLIENT_SECRET
@@ -7,6 +8,7 @@ import com.mataecheverry.project_ravelry.dades.autenticacio.URL_API
 import com.mataecheverry.project_ravelry.dades.autenticacio.URL_AUTH
 import com.mataecheverry.project_ravelry.dades.autenticacio.URL_TOKEN
 import com.mataecheverry.project_ravelry.dades.xarxa.api.auth.RavelryAuthService
+import com.mataecheverry.project_ravelry.models.app_models.LoggedInUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -23,8 +25,10 @@ object RavelryClient {
     const val TOKEN_URL = URL_TOKEN
     private var clientId = CLIENT_ID
     private var clientSecret = CLIENT_SECRET
-    private var accessToken = ""
+    private var accessToken = LoggedInUser.user_token
     private var redirectURI = "ravelon://oauth-callback/ravelry"
+
+
 
 
     private val httpClient =  OkHttpClient.Builder().addInterceptor { chain ->
@@ -33,7 +37,7 @@ object RavelryClient {
                 refreshToken()
             }
         }
-        //Log.d("TOKEN --> ", "Token --> $accessToken")
+        Log.d("TOKEN --> ", "Token --> $accessToken")
         val request = chain.request().newBuilder()
             .header("Authorization", "Bearer $accessToken")
             .build()
@@ -58,10 +62,8 @@ object RavelryClient {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    private val tokenRetrofit = Retrofit.Builder()
-        .baseUrl(TOKEN_URL)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
+
+
 
 
 
@@ -76,10 +78,15 @@ object RavelryClient {
             }
         }
         catch (ex: Exception){
-            //Log.d("REFRESH_TOKEN --> ", "EXCEPTION --> $ex.printStackTrace()")
+            Log.d("REFRESH_TOKEN --> ", "EXCEPTION --> $ex.printStackTrace()")
             ex.printStackTrace()
         }
     }
+
 }
+
+
+
+
 
 

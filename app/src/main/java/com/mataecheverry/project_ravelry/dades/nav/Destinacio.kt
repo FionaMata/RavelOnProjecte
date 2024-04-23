@@ -42,7 +42,7 @@ sealed class Destinacio(
             .joinToString("/")
     }
 
-    object Login: Destinacio(NavigationCat.Login.previousPath+"/Start")
+    object Login: Destinacio(NavigationCat.Login.previousPath+"/Inici")
     object Register: Destinacio(NavigationCat.Login.previousPath+"/Register")
     object Recover: Destinacio(NavigationCat.Login.previousPath+"/Recover")
     object Home: Destinacio(NavigationCat.Home.previousPath+"/Start")

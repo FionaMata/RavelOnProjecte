@@ -1,16 +1,15 @@
-package com.mataecheverry.project_ravelry.dades.api_models
+package com.mataecheverry.project_ravelry.models.api_models
 
 
 import com.google.gson.annotations.SerializedName
-import com.mataecheverry.project_ravelry.dades.app_models.AppPatternAuthor
 
-data class PatternAuthor(
+data class Designer(
     @SerializedName("crochet_pattern_count")
     val crochetPatternCount: Int,
     @SerializedName("favorites_count")
     val favoritesCount: Int,
     @SerializedName("id")
-    var id: Int,
+    val id: Int,
     @SerializedName("knitting_pattern_count")
     val knittingPatternCount: Int,
     @SerializedName("name")
@@ -22,9 +21,3 @@ data class PatternAuthor(
     @SerializedName("users")
     val users: List<User>
 )
-fun PatternAuthor.toAppPatternAuthor(): AppPatternAuthor = AppPatternAuthor(
-    id = id,
-    name = name,
-    users = users
-)
-

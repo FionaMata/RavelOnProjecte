@@ -1,7 +1,8 @@
-package com.mataecheverry.project_ravelry.dades.api_models
+package com.mataecheverry.project_ravelry.models.api_models
 
 
 import com.google.gson.annotations.SerializedName
+import com.mataecheverry.project_ravelry.models.app_models.AppPatternSource
 
 data class PatternSource(
     @SerializedName("amazon_rating")
@@ -125,3 +126,67 @@ data class PatternSource(
     @SerializedName("work_id")
     val workId: Any
 )
+
+fun PatternSource.toAppPatternSource(): AppPatternSource = AppPatternSource(
+    amazonRating = amazonRating,
+    amazonReviews = amazonReviews,
+    amazonSalesRank = amazonSalesRank,
+    amazonUpdatedAt = amazonUpdatedAt,
+    amazonUrl = amazonUrl,
+    approvedPatternsCount = approvedPatternsCount,
+    asin = asin,
+    author = author,
+    authorPatternAuthorId = authorPatternAuthorId,
+    authorSurname = authorSurname,
+    bookBinding = bookBinding,
+    completed = completed,
+    createdAt = createdAt,
+    createdByUserId = createdByUserId,
+    designerPendingPatternsCount = designerPendingPatternsCount,
+    designerUsersCount = designerUsersCount,
+    editorshipsCount = editorshipsCount,
+    favoritesCount = favoritesCount,
+    firstPhotoId = firstPhotoId,
+    flaggingsCount = flaggingsCount,
+    fulfilledByRavelry = fulfilledByRavelry,
+    hasPhoto = hasPhoto,
+    id =id,
+    isbn13 = isbn13,
+    issue = issue,
+    keywords = keywords,
+    label = label,
+    largeImageUrl = largeImageUrl,
+    lastPatternEdit = lastPatternEdit,
+    linkId = linkId,
+    listPrice = listPrice,
+    lockVersion = lockVersion,
+    mediumImageUrl = mediumImageUrl,
+    name = name,
+    notes = notes,
+    outOfPrint = outOfPrint,
+    patternSourceTypeId = patternSourceTypeId,
+    patternsCount = patternsCount,
+    pendingPatternsCount = pendingPatternsCount,
+    periodical = periodical,
+    permalink = permalink,
+    photosPermitted = photosPermitted,
+    popularity = popularity,
+    popularityRank = popularityRank,
+    price = price,
+    publicationDate = publicationDate,
+    publicationDateSet = publicationDateSet,
+    publicationDaySet = publicationDaySet,
+    publicationSortOrder = publicationSortOrder,
+    publicationYear = publicationYear,
+    publisherId = publisherId,
+    shelfImagePath = shelfImagePath,
+    shelfImageSize = shelfImageSize,
+    smallImageUrl = smallImageUrl,
+    sourceGroupId = sourceGroupId,
+    stickiesCount = stickiesCount,
+    storeId = storeId,
+    updatedAt = updatedAt,
+    url = url,
+    workId = workId
+)
+

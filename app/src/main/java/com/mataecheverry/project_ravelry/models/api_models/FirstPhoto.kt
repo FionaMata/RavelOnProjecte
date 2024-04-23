@@ -1,7 +1,8 @@
-package com.mataecheverry.project_ravelry.dades.api_models
+package com.mataecheverry.project_ravelry.models.api_models
 
 
 import com.google.gson.annotations.SerializedName
+import com.mataecheverry.project_ravelry.models.app_models.AppPhoto
 
 data class FirstPhoto(
     @SerializedName("caption")
@@ -33,3 +34,8 @@ data class FirstPhoto(
     @SerializedName("y_offset")
     val yOffset: Int
 )
+
+fun FirstPhoto.toAppPhoto(): AppPhoto = AppPhoto(
+
+)
+

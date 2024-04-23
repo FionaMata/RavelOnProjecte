@@ -1,4 +1,4 @@
-package com.mataecheverry.project_ravelry.dades.app_models
+package com.mataecheverry.project_ravelry.models.app_models
 
 class AppProject () {
     var user: AppUser = AppUser()

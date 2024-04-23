@@ -3,6 +3,7 @@ package com.mataecheverry.project_ravelry.dades.autenticacio
 import android.content.Context
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
+import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -13,24 +14,25 @@ import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 
 sealed class AuthReply<out T>{
     data class Success<T>(val dades: T): AuthReply<T>()
     data class Failed (val errorMessage: String): AuthReply<Nothing>()
+
+
 }
 
 class AuthManager (private val context: Context){
     private val firebaseAuth: FirebaseAuth by lazy { com.google.firebase.Firebase.auth }
+    private val authManager = Identity.getSignInClient(context)
 
 
-    private val scope = "offline patternstore-read patternstore-pdf"
-    private val state = "request state"
-    private var projectAccessToken: String = ""
 
-
-    private val googleClient: GoogleSignInClient by lazy {
+    private val googleSignInClient: GoogleSignInClient by lazy {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken("713844823887-n1iqrilqvinlo1l3v85kir0j3vj4kp1q.apps.googleusercontent.com")
             .requestEmail()
@@ -38,30 +40,61 @@ class AuthManager (private val context: Context){
         GoogleSignIn.getClient(context, gso)
 
     }
-
-    fun getUser(): FirebaseUser?{
-        return firebaseAuth.currentUser
+    suspend fun getUser(): FirebaseUser? = withContext(Dispatchers.IO){
+        FirebaseAuth.getInstance().currentUser
     }
 
     fun tancaSessio(){
         firebaseAuth.signOut()
     }
 
+    //Entrada anònima per testeo:
+    suspend fun iniciaSessioAnonima(): AuthReply<FirebaseUser>{
+        return try{
+            val resultat = firebaseAuth.signInAnonymously().await()
+            AuthReply.Success(resultat.user?:
+            throw Exception("Error en iniciar sessio")
+            )
+        }
+        catch (e:Exception){
+            AuthReply
+                .Failed(e.message ?: "Error en iniciar sessió")
+        }
+    }
+
+
     //region MAIL I PASSWORD
     //No podem fer un login amb correu i mot de pas si no està registrat prèviament:
-    suspend fun createUserWithMailAndPassword(correu: String,
-                                             motDePas: String): AuthReply<FirebaseUser?> {
+    suspend fun createUserWithMailAndPassword(
+        email: String,
+        password: String
+    ): AuthReply<FirebaseUser?>
+    {
         return try{
-            val resultat = firebaseAuth.createUserWithEmailAndPassword(correu, motDePas).await()
-            AuthReply.Success(resultat.user?: throw Exception ("EXCEPTION DE CREAR USUARI AMB CORREU I PASSWORD"))
+            val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+            AuthReply.Success(result.user?: throw Exception ("EXCEPTION DE CREAR USUARI AMB CORREU I PASSWORD"))
         }catch (e:Exception){
             AuthReply.Failed(e.message?:"CATCH DE CREACIO D'USUARI NOU.")
         }
     }
 
+    suspend fun passwordForgotten(
+        email: String
+    ): AuthReply<Unit?>{
+        return try{
+            val result = firebaseAuth.sendPasswordResetEmail(
+                email
+            ).await()
+            AuthReply.Success(Unit)
+        }
+        catch (e:Exception){
+            AuthReply.Failed(e.message ?: "Error resetting password.")
+        }
+    }
+
     //Inici de sessió amb correu i contrasenya:
-    suspend fun iniciaUsuariAmbCorreuIMotDePas(correu: String,
-                                               motDePas: String): AuthReply<FirebaseUser?> {
+    suspend fun signInwithEmailAndPassword(correu: String,
+                                           motDePas: String): AuthReply<FirebaseUser?> {
         return try{
             val resultat = firebaseAuth.signInWithEmailAndPassword(correu, motDePas).await()
             AuthReply.Success(resultat.user?: throw Exception ("Something went wrong. Check username and password - LIADA 1 EN INICI DE SESSIO"))
@@ -84,7 +117,7 @@ class AuthManager (private val context: Context){
     }
 
     fun iniciDeSessioAmbGoogle(laucherIniciDeSessioAmbGoogle: ActivityResultLauncher<Intent>) {
-        val signInIntent = googleClient.signInIntent
+        val signInIntent = googleSignInClient.signInIntent
         laucherIniciDeSessioAmbGoogle.launch(signInIntent)
     }
 
@@ -96,7 +129,9 @@ class AuthManager (private val context: Context){
             AuthReply.Failed(e.message ?: "No s'ha pogut iniciar sessió amb Google")
         }
     }
-    //endregion
+
+
+        //endregion
 
     //region OPENID
 

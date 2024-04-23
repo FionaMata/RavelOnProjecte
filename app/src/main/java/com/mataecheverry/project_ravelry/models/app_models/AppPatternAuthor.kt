@@ -1,6 +1,6 @@
-package com.mataecheverry.project_ravelry.dades.app_models
+package com.mataecheverry.project_ravelry.models.app_models
 
-import com.mataecheverry.project_ravelry.dades.api_models.User
+import com.mataecheverry.project_ravelry.models.api_models.User
 
 class AppPatternAuthor(id: Int, name: String, users: List<User>) {
     var id: Int = 0
