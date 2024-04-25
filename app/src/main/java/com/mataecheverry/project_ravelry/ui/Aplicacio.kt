@@ -1,7 +1,6 @@
 package com.mataecheverry.project_ravelry.ui
 
-import android.os.Build
-import androidx.annotation.RequiresApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -45,8 +44,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -54,6 +55,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.mataecheverry.project_ravelry.R
+import com.mataecheverry.project_ravelry.dades.autenticacio.AuthManager
 import com.mataecheverry.project_ravelry.dades.nav.Destinacio
 import com.mataecheverry.project_ravelry.dades.nav.NavigationCat
 import com.mataecheverry.project_ravelry.dades.nav.NavigationGraph
@@ -72,16 +74,10 @@ val displaysWithDrawer = listOf(
     Destinacio.Home.genericPath,
     Destinacio.Search.genericPath,
     Destinacio.Patterns.genericPath,
-    Destinacio.PatternDetails.genericPath,
     Destinacio.Favorites.genericPath,
-    Destinacio.FavoriteDetails.genericPath,
     Destinacio.Projects.genericPath,
-    Destinacio.ProjectDetails.genericPath,
-    Destinacio.UploadProject.genericPath,
     Destinacio.Shops.genericPath,
-    Destinacio.ShopDetails.genericPath,
     Destinacio.Calendar.genericPath,
-    Destinacio.CalendarDetails.genericPath,
     Destinacio.About.genericPath
 )
 
@@ -96,8 +92,9 @@ val displaysWithBottomAppBar = listOf(
 
 //endregion
 
+@Preview
 @Composable
-fun AppDisplay (content: @Composable () -> Unit){
+fun AppDisplay (content: @Composable () -> Unit = {}){
     Project_RavelryTheme {
         Surface (
             modifier = Modifier.fillMaxSize(),
@@ -108,20 +105,22 @@ fun AppDisplay (content: @Composable () -> Unit){
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun Aplicacio(content: @Composable ()-> Unit = {Text ("")}){
+fun Aplicacio(
+    content: @Composable ()-> Unit = {Text ("")})
+{
     val controladorDeNavegacio = rememberNavController()
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
     var estatDrawer = rememberDrawerState(initialValue = DrawerValue.Closed)
     val navBackStackEntry by controladorDeNavegacio.currentBackStackEntryAsState()
     val rutaActual = navBackStackEntry?.destination?.route ?: ""
     val snackbarHostState = remember{ SnackbarHostState()}
-    RavelryScaffold(controladorDeNavegacio, coroutineScope, estatDrawer, rutaActual, snackbarHostState)
+    val authManager: AuthManager = AuthManager(LocalContext.current)
+
+    RavelryScaffold(controladorDeNavegacio, coroutineScope, estatDrawer, rutaActual, snackbarHostState, authManager)
 
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RavelryScaffold(
@@ -130,6 +129,7 @@ fun RavelryScaffold(
     estatDrawer: DrawerState,
     currentPath: String,
     snackbarHostState: SnackbarHostState,
+    authManager: AuthManager
 ){
     var topAppBarTitle = ""
     val currentScreen by remember { mutableStateOf<Destinacio>(Destinacio.Home) }
@@ -290,12 +290,12 @@ fun RavelryScaffold(
             coroutineScope,
             estatDrawer,
             modifier = Modifier.padding(paddingValues),
-            rutaActual = currentPath)
+            rutaActual = currentPath,
+            authManager = authManager)
     }
 }
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun RavelryDrawer(
     navigationController: NavHostController = rememberNavController(),
@@ -303,6 +303,7 @@ fun RavelryDrawer(
     estatDrawer: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
     modifier: Modifier,
     rutaActual: String,
+    authManager: AuthManager
 
 ){
     ModalNavigationDrawer(
@@ -320,7 +321,8 @@ fun RavelryDrawer(
                     //Aqui ha d'anar la imatge d'usuari. tirarem d'un async de moment
                     model = {},
                     contentDescription = "User selected profile picture.",
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
                         .clip(RoundedCornerShape(50.dp))
                         .weight(0.2F))
                 Spacer (Modifier.height(10.dp))
@@ -354,6 +356,10 @@ fun RavelryDrawer(
                         shape = ShapeDefaults.Medium
                     )
                 }
+                Text("Log out",
+                    modifier = Modifier
+                        .clickable { authManager.tancaSessio() }
+                    )
             }
         },
         gesturesEnabled = rutaActual in displaysWithDrawer

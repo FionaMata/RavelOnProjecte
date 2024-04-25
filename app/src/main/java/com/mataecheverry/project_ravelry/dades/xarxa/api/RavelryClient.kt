@@ -25,13 +25,14 @@ object RavelryClient {
     const val TOKEN_URL = URL_TOKEN
     private var clientId = CLIENT_ID
     private var clientSecret = CLIENT_SECRET
-    private var accessToken = LoggedInUser.user_token
+    private var accessToken = ""
     private var redirectURI = "ravelon://oauth-callback/ravelry"
 
 
 
 
-    private val httpClient =  OkHttpClient.Builder().addInterceptor { chain ->
+    private val httpClient =  OkHttpClient.Builder()
+        .addInterceptor { chain ->
         if (accessToken.isEmpty()) {
             runBlocking {
                 refreshToken()
@@ -63,30 +64,19 @@ object RavelryClient {
         .build()
 
 
-
-
-
-
-
     private suspend fun refreshToken() = withContext(Dispatchers.IO) {
         val authService = authRetrofit.create(RavelryAuthService::class.java)
         val authHeader = Credentials.basic(clientId, clientSecret)
         try {
-            val response = authService.authenticate(authorization = authHeader, code="code")
+            val response = authService.authenticate(grantType = "authorization_code", authorization = authHeader, email = LoggedInUser.user_mail, password = LoggedInUser.user_password, scope="offline patternstore-read deliveries-read")
             if (response.accessToken.isNotEmpty()){
                 accessToken = response.accessToken
             }
         }
         catch (ex: Exception){
-            Log.d("REFRESH_TOKEN --> ", "EXCEPTION --> $ex.printStackTrace()")
+            Log.d("REFRESH_TOKEN --> ", "EXCEPTION --> $ex.printStackTrace() ¡")
             ex.printStackTrace()
         }
     }
 
 }
-
-
-
-
-
-

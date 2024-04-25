@@ -10,7 +10,9 @@ interface RavelryAuthService {
     @POST("oauth2/auth")
     suspend fun authenticate(
         @Field("grant_type") grantType: String = "authorization_code",
-        @Field("code") code: String,
+        @Field("scope")  scope: String,
+        @Field("password")  password: String,
+        @Field("email")  email: String,
         @Header("authorization") authorization: String
     ): RavelryAuthResponse
 }

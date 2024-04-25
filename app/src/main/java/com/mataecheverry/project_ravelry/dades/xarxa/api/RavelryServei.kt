@@ -13,8 +13,8 @@ import retrofit2.http.Query
 
 interface RavelryServei {
 
-
-
+    @GET("current_user.json")
+    suspend fun getCurrentUser()
 
     @GET("patterns/search.json")
     suspend fun getHotRightNow(
@@ -31,9 +31,6 @@ interface RavelryServei {
         @Query("sort") sort: String = "created",
         @Query("view") view: String = "captioned_thumbs"
     ): APIReplyGetPatterns
-
-
-
     @POST(LOGIN)
     @FormUrlEncoded
     fun login(@Body request: LoginRequest): Call<LoginResponse>

@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.mataecheverry.project_ravelry"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"

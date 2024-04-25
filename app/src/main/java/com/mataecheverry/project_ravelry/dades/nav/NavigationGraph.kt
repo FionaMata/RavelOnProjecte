@@ -1,7 +1,5 @@
 package com.mataecheverry.project_ravelry.dades.nav
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -22,7 +20,6 @@ import com.mataecheverry.project_ravelry.ui.pantalles.PantallaHome
 import com.mataecheverry.project_ravelry.ui.pantalles.PantallaLogin
 import com.mataecheverry.project_ravelry.ui.pantalles.PantallaRegistry
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NavigationGraph (
     navigationController: NavHostController = rememberNavController()) {

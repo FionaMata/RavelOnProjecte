@@ -22,22 +22,22 @@ class FirestoreManager() {
     private val firestore = FirebaseFirestore.getInstance()
 
 
-    //Tots els .ADD
-    suspend fun addUser(user: AppUser){
+    //Tots els .ADD. Totes són suspend!
+     fun addUser(user: AppUser){
         val ref = firestore.collection(USERS)
             .document(user.id.toString())
 //        val newUser = user.copy(id=ref.id)
 //        ref.set(newUser).await()
     }
 
-    suspend fun addPatternAuthor(patternAuthor: AppPatternAuthor){
+    fun addPatternAuthor(patternAuthor: AppPatternAuthor){
         val ref= firestore.collection(PATTERN_AUTHORS)
             .document(patternAuthor.id.toString())
 //        val newPatternAuthor = patternAuthor.copy(id=ref.id)
 //        ref.set(newPatternAuthor).await()
     }
 
-    suspend fun addProjects(project: AppProject){
+     fun addProjects(project: AppProject){
         val ref= firestore.collection(PROJECTS)
             .document(project.id.toString())
 //        val newProject = project.copy(id=ref.id)

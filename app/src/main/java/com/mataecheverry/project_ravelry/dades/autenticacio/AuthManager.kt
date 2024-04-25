@@ -2,6 +2,7 @@ package com.mataecheverry.project_ravelry.dades.autenticacio
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -14,6 +15,7 @@ import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
+import com.mataecheverry.project_ravelry.models.app_models.LoggedInUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -46,6 +48,7 @@ class AuthManager (private val context: Context){
 
     fun tancaSessio(){
         firebaseAuth.signOut()
+        googleSignInClient.signOut()
     }
 
     //Entrada anònima per testeo:
@@ -54,6 +57,7 @@ class AuthManager (private val context: Context){
             val resultat = firebaseAuth.signInAnonymously().await()
             AuthReply.Success(resultat.user?:
             throw Exception("Error en iniciar sessio")
+
             )
         }
         catch (e:Exception){
@@ -72,6 +76,10 @@ class AuthManager (private val context: Context){
     {
         return try{
             val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+            LoggedInUser.credentials = result.credential!!
+            val token = firebaseAuth.currentUser?.getIdToken(true)?.await()
+            LoggedInUser.user_token = token.toString()
+            Log.d("TOKEN","A create user amb correu+password --> ")
             AuthReply.Success(result.user?: throw Exception ("EXCEPTION DE CREAR USUARI AMB CORREU I PASSWORD"))
         }catch (e:Exception){
             AuthReply.Failed(e.message?:"CATCH DE CREACIO D'USUARI NOU.")
@@ -97,6 +105,12 @@ class AuthManager (private val context: Context){
                                            motDePas: String): AuthReply<FirebaseUser?> {
         return try{
             val resultat = firebaseAuth.signInWithEmailAndPassword(correu, motDePas).await()
+            Log.d("GOOGLE","Resultat del login")
+            LoggedInUser.credentials = resultat.credential!!
+            val token = firebaseAuth.currentUser?.getIdToken(true)?.await()
+            LoggedInUser.user_token = token.toString()
+            Log.d("TOKEN","A sign in user amb correu+password --> ")
+
             AuthReply.Success(resultat.user?: throw Exception ("Something went wrong. Check username and password - LIADA 1 EN INICI DE SESSIO"))
         }catch (e:Exception){
            AuthReply.Failed(e.message?:"Something failed while Signing in - FALLO INICI SESSIO. ESTEM AL CATCH")
@@ -109,7 +123,11 @@ class AuthManager (private val context: Context){
         return try {
             val usuariDeFirebase = firebaseAuth.signInWithCredential(credencial).await()
             usuariDeFirebase.user?.let {
+                LoggedInUser.user_token = usuariDeFirebase.user?.getIdToken(true)?.await().toString()
+                Log.d("TOKEN","A create user amb correu+password --> ")
+
                 AuthReply.Success(it)
+
             } ?: throw Exception("THROW INICI SESSIO AMB GOOGLE")
         } catch (e: Exception) {
             AuthReply.Failed(e.message ?: "CATCH INICI DE SESSIO AMB GOOGLE")

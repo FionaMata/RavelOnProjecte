@@ -1,9 +1,10 @@
 package com.mataecheverry.project_ravelry.ui.viewmodels
 
-import android.os.Build
-import androidx.annotation.RequiresApi
+
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.mataecheverry.project_ravelry.dades.autenticacio.FirestoreManager
 import com.mataecheverry.project_ravelry.dades.xarxa.api.RavelryClient
 import com.mataecheverry.project_ravelry.dades.xarxa.api.RavelryHelperImpl
@@ -14,7 +15,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-@RequiresApi(Build.VERSION_CODES.O)
 class ViewModelHome : ViewModel(){
     private var _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state.asStateFlow()
@@ -26,7 +26,6 @@ class ViewModelHome : ViewModel(){
         loadDebutPatterns()
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun loadHotRightNowPatterns(){
         _state.value = _state.value.copy(loading = true)
         viewModelScope.launch {
@@ -56,6 +55,16 @@ class ViewModelHome : ViewModel(){
                 }
         }
     }
+
+    fun checkForActiveSession(){
+        if (FirebaseAuth.getInstance().currentUser != null){
+            Log.d("USUARI", "Usuari logged  in")
+        }
+        else
+            Log.d("USUARI", "Usuari no logged  in")
+    }
+
+
 }
 
 

@@ -1,7 +1,5 @@
 package com.mataecheverry.project_ravelry.ui.pantalles
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -37,7 +35,6 @@ import com.mataecheverry.project_ravelry.ui.AppDisplay
 import com.mataecheverry.project_ravelry.ui.viewmodels.ViewModelHome
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Preview()
 @Composable
 private fun HomePreview() {
@@ -52,7 +49,6 @@ private fun HomePreview() {
 }
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun PantallaHome(
     authManager: AuthManager,
@@ -68,6 +64,9 @@ fun PantallaHome(
     //var selected = remember {mutableStateOf(true)}
     var tabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf("Debut Patterns", "Hot Right Now", "You've Looked At...")
+
+    viewModel.checkForActiveSession()
+    authManager.tancaSessio()
 
 
 

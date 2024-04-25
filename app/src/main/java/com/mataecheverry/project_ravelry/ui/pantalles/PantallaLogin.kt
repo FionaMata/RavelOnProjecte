@@ -100,9 +100,9 @@ fun PantallaLogin(
                 //Del compte de google volem les credencials, per tal de poder iniciar sessió amb Firebase
                 val credentials = GoogleAuthProvider.getCredential(reply.dades.idToken, null)
                 area.launch {
+
                     val usuariFirebase = authManager.iniciDeSessioAmbCredencials(credentials)
                     if (usuariFirebase != null){
-                        LoggedInUser.user_token = reply.dades.idToken.toString()
                         goToHome()
                     }
                 }
@@ -117,13 +117,6 @@ fun PantallaLogin(
             }
         }
     }
-
-
-
-
-
-
-
 
     Column(
         modifier = Modifier
@@ -163,13 +156,14 @@ fun PantallaLogin(
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp, vertical = 10.dp),
                     label = { Text(text = "Correu electrònic") },
-                    value = "",
-                    visualTransformation = PasswordVisualTransformation(),
+                    value = email,
+                    enabled = true,
                     onValueChange = {
+                        email = it
                         LoggedInUser.user_mail = it
                         error = false
                         errorMessege = ""
-                    },
+                    }
 
                     )
                 TextField(
@@ -177,11 +171,13 @@ fun PantallaLogin(
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp, vertical = 10.dp),
                     label = { Text(text = "Password") },
-                    value = "",
+                    value = password,
+                    enabled = true,
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     onValueChange = {
-                        LoggedInUser.user_password = it
+                        password = it
+                        LoggedInUser.user_password = password
                         error = false
                         errorMessege = ""
                     },

@@ -5,13 +5,17 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 class RavelryHelperImpl(private val apiService: RavelryServei) : RavelryHelper {
+    override suspend fun getCurrentUser() {
+        return apiService.getCurrentUser()
+    }
 
     override suspend fun getHotRightNow(
         sort: String,
         page: Int,
         pageSize: Int
     ): Flow<APIReplyGetPatterns> = flow {
-        emit(apiService.getHotRightNow(sort, page, pageSize))
+        val v:APIReplyGetPatterns =apiService.getHotRightNow(sort, page, pageSize)
+        emit(v)
     }
 
 
