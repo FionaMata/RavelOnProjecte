@@ -2,12 +2,14 @@ package com.mataecheverry.project_ravelry.ui.pantalles
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -31,22 +33,9 @@ import coil.compose.AsyncImage
 import com.mataecheverry.project_ravelry.dades.autenticacio.AuthManager
 import com.mataecheverry.project_ravelry.dades.xarxa.firebase.FirestoreManager
 import com.mataecheverry.project_ravelry.models.app_models.AppPattern
-import com.mataecheverry.project_ravelry.ui.AppDisplay
 import com.mataecheverry.project_ravelry.ui.viewmodels.ViewModelHome
 
 
-@Preview()
-@Composable
-private fun HomePreview() {
-    AppDisplay {
-        PantallaHome(
-            authManager = AuthManager(LocalContext.current),
-            goToLogin = {},
-            firestoreManager = FirestoreManager(LocalContext.current),
-            onClick = {}
-        )
-    }
-}
 
 
 @Composable
@@ -69,7 +58,6 @@ fun PantallaHome(
     authManager.tancaSessio()
 
 
-
     Column(
         Modifier
             .fillMaxSize()
@@ -90,7 +78,9 @@ fun PantallaHome(
             //2 -> Carregar contingut YouveLookedAt
         }
 
-        LazyColumn(){
+        LazyVerticalGrid(columns = GridCells.Fixed(2),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)){
             items(patterns){
                 //Log.d("CLICK","NO FUNCIONA ACCES")
                 OutlinedRavelCard(it, onClick, viewModel)

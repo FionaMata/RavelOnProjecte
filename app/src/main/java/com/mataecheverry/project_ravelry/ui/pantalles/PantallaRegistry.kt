@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import com.mataecheverry.project_ravelry.R
 import com.mataecheverry.project_ravelry.dades.autenticacio.AuthManager
 
-
 @Composable
 fun PantallaRegistry(
     authManager: AuthManager,

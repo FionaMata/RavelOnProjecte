@@ -12,20 +12,33 @@ class RavelryHelperImpl(private val apiService: RavelryServei) : RavelryHelper {
     override suspend fun getHotRightNow(
         sort: String,
         page: Int,
-        pageSize: Int
+        pageSize: Int,
+        view: String,
+        photo: Boolean
     ): Flow<APIReplyGetPatterns> = flow {
-        val v:APIReplyGetPatterns =apiService.getHotRightNow(sort, page, pageSize)
+        val v:APIReplyGetPatterns = apiService.getHotRightNow(sort, page, pageSize)
         emit(v)
     }
-
 
     override suspend fun getDebutPatterns(
         craft: String,
         photo: String,
-        debutPattern: String,
+        debutPattern: Boolean,
         sort: String,
         view: String
     ): Flow<APIReplyGetPatterns> = flow {
         emit(apiService.getDebutPatterns(craft,photo,debutPattern,sort, view))
     }
+
+    override suspend fun getPatterns(
+        craft: String,
+        page: Int,
+        pageSize: Int,
+        sort: String,
+        view: String,
+        photo: Boolean
+    ): Flow<APIReplyGetPatterns> = flow {
+        emit(apiService.getPatterns(craft, photo, sort, view, page, pageSize))
+    }
+
 }

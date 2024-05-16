@@ -1,6 +1,10 @@
 package com.mataecheverry.project_ravelry.ui.pantalles
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -42,36 +46,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.firebase.auth.GoogleAuthProvider
 import com.mataecheverry.project_ravelry.MainActivity
 import com.mataecheverry.project_ravelry.R
 import com.mataecheverry.project_ravelry.dades.autenticacio.AuthManager
 import com.mataecheverry.project_ravelry.dades.autenticacio.AuthReply
-import com.mataecheverry.project_ravelry.models.app_models.LoggedInUser
-import com.mataecheverry.project_ravelry.ui.AppDisplay
+import com.mataecheverry.project_ravelry.dades.autenticacio.URL_LOGIN_RAVELRY
+import com.mataecheverry.project_ravelry.models.app_models.AppUser
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 //Caldrà fer el procediment del login per open id aqui!
-@Preview
-@Composable
-fun PreviewLogin()
-{
-    AppDisplay {
-        PantallaLogin(
-            mainActivity = MainActivity(),
-            authManager = AuthManager(LocalContext.current),
-            goToRegister = { /*TODO*/ },
-            goToRecover = { /*TODO*/ },
-            goToHome = { /*TODO*/}
-        )
-    }
-}
-
-
 @Composable
 fun PantallaLogin(
     mainActivity: MainActivity,
@@ -84,38 +69,25 @@ fun PantallaLogin(
 
     var email by remember { mutableStateOf("") }
     var password by remember {mutableStateOf("")}
+    var currentUser by remember { mutableStateOf("") }
     var checked by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf(false) }
     var errorMessege by remember { mutableStateOf("") }
     val context = LocalContext.current
     val area = rememberCoroutineScope()
 
-    val launcherIniciDeSessioAmbGoogle = rememberLauncherForActivityResult(
-        //Llencem un activityForResult
+    //Funció per obrir el navegador:
+    val openIdSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()) { result ->
-        GoogleSignIn.getSignedInAccountFromIntent(result.data) //obre una activity de Google on
-        //L'usuari es valida, i ens retornarà una resposta que contindrà el compte de google o un error
-        when(val reply = authManager.manageGoogleLoginResults(GoogleSignIn.getSignedInAccountFromIntent(result.data))) {
-            is AuthReply.Success -> {
-                //Del compte de google volem les credencials, per tal de poder iniciar sessió amb Firebase
-                val credentials = GoogleAuthProvider.getCredential(reply.dades.idToken, null)
-                area.launch {
+        if (result.resultCode == Activity.RESULT_OK){
 
-                    val usuariFirebase = authManager.iniciDeSessioAmbCredencials(credentials)
-                    if (usuariFirebase != null){
-                        goToHome()
-                    }
-                }
-            }
-            is AuthReply.Failed -> {
-                error = true
-                errorMessege = reply.errorMessage
-            }
-            else -> {
-                error = true
-                errorMessege = "Unexpected error."
-            }
+
+            //No cal fer res més, només hem d'obrir el navegador i recuperar el token d'autorització.
         }
+        else {
+
+        }
+
     }
 
     Column(
@@ -160,7 +132,7 @@ fun PantallaLogin(
                     enabled = true,
                     onValueChange = {
                         email = it
-                        LoggedInUser.user_mail = it
+                        AppUser.LoggedInUser.email = it
                         error = false
                         errorMessege = ""
                     }
@@ -177,7 +149,7 @@ fun PantallaLogin(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     onValueChange = {
                         password = it
-                        LoggedInUser.user_password = password
+                        AppUser.LoggedInUser.user_password = it
                         error = false
                         errorMessege = ""
                     },
@@ -230,17 +202,15 @@ fun PantallaLogin(
                     }
                 }
                 HorizontalDivider(Modifier.padding(10.dp))
-                BotoXXSS(
-                    onClick = {
-                              authManager.iniciDeSessioAmbGoogle(launcherIniciDeSessioAmbGoogle)
-                              },
-                    icon = R.drawable.google,
-                    nomXarxa = "Google")
 
                 BotoXXSS(
-                    onClick = { /*TODO*/ },
-                    icon = R.drawable.logotipodeopenid,
-                    nomXarxa = "OpenId"
+                    onClick = {
+                        area.launch {
+                            authManager.signInRavelryOpenId(launcherRavelry = openIdSignInLauncher)
+                        }
+                    },
+                    icon = R.drawable.typeselectedstateenabled,
+                    nomXarxa = "Ravelry"
                 )
                 HorizontalDivider(Modifier.padding(10.dp))
                 Column(verticalArrangement = Arrangement.SpaceEvenly,
@@ -327,11 +297,22 @@ suspend fun emailAndPasswordLogin(
                 goToStart()
                 val firebaseUser = reply.dades
                 val idToken = firebaseUser?.getIdToken(true)?.await()
-                LoggedInUser.user_token = idToken?.token.toString()
+                AppUser.LoggedInUser.user_token = idToken?.token.toString()
                 goToStart()
             }
             is AuthReply.Failed ->  {}
+            else -> {}
         }
     }
 }
+
+suspend fun obraNavegador(launcher: ActivityResultLauncher<Intent>) //context: Context,
+{
+    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(URL_LOGIN_RAVELRY))
+    //Envés de fer un startActivity(), utilitzem el launcher creat :).
+    launcher.launch(intent)
+}
+
+
+
 

@@ -1,2 +1,67 @@
 package com.mataecheverry.project_ravelry.ui.pantalles
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+
+
+@Preview
+@Composable
+fun PantallaRecover(){
+
+    var userEmail by remember { mutableStateOf("") }
+
+    Column(modifier = Modifier
+        .verticalScroll(rememberScrollState())
+        .background(Color(0XFFF3F4F0))
+        .padding(top = 75.dp),
+        verticalArrangement = Arrangement.SpaceEvenly,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        Box(){
+
+        }
+        Column {
+            TitleText(title = "Forgot your password?\nWe got your back.")
+            HorizontalDivider(Modifier.padding(24.dp))
+            DescriptionText(description = "Enter your email to start the password recovery process.\n" +
+                    "Enter the email you registred with: ")
+
+
+
+            TextField(
+                value = userEmail,
+                onValueChange = {userEmail = it},
+                label = {Text("Your email")},
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding (10.dp)
+            )
+
+
+
+
+        }
+
+    }
+
+}

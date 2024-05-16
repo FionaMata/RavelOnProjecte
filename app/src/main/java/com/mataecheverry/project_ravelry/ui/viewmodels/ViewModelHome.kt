@@ -27,7 +27,7 @@ class ViewModelHome : ViewModel(){
     }
 
     fun loadHotRightNowPatterns(){
-        _state.value = _state.value.copy(loading = true)
+        _state.value = state.value.copy(loading = true)
         viewModelScope.launch {
             apiHelper.getHotRightNow()
                 .collect(){ result ->

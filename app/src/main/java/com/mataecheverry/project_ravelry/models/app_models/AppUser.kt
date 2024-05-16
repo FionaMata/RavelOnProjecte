@@ -1,7 +1,5 @@
 package com.mataecheverry.project_ravelry.models.app_models
 
-import com.google.firebase.auth.AuthCredential
-
 open class AppUser() {
 
     var id: Int = 0
@@ -22,22 +20,11 @@ open class AppUser() {
 
     //part per singleton
     var user_password: String = ""
-    lateinit var user_credentials: AuthCredential
+    //lateinit var user_credentials: AuthCredential
     var user_token: String = ""
+
+
+    object LoggedInUser: AppUser()
 }
 
-class LoggedInUser : AppUser {
-    constructor(
-        user_mail: String = "",
-        user_password: String = "",
-        credentials: AuthCredential,
-        user_token: String = ""
-    ) : super()
 
-    companion object {
-        var user_mail: String = ""
-        var user_password: String = ""
-        lateinit var credentials: AuthCredential
-        var user_token: String = ""
-    }
-}

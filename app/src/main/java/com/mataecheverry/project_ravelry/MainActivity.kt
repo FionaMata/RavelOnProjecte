@@ -1,24 +1,28 @@
 package com.mataecheverry.project_ravelry
 
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
 import com.mataecheverry.project_ravelry.ui.Aplicacio
-import com.mataecheverry.project_ravelry.ui.AppDisplay
+import com.mataecheverry.project_ravelry.ui.theme.Project_RavelryTheme
 
 class MainActivity : ComponentActivity() {
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-           AppDisplay {
-               Aplicacio()
-           }
+            Project_RavelryTheme {
+                Surface (
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ){
+                    Aplicacio()
+                }
+            }
         }
     }
-
 }
-

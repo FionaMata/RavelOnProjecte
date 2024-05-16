@@ -1,14 +1,11 @@
 package com.mataecheverry.project_ravelry.dades.xarxa.api
 
 import android.util.Log
-import com.google.gson.GsonBuilder
 import com.mataecheverry.project_ravelry.dades.autenticacio.CLIENT_ID
 import com.mataecheverry.project_ravelry.dades.autenticacio.CLIENT_SECRET
-import com.mataecheverry.project_ravelry.dades.autenticacio.URL_API
-import com.mataecheverry.project_ravelry.dades.autenticacio.URL_AUTH
+import com.mataecheverry.project_ravelry.dades.autenticacio.URL_RAVELRY
 import com.mataecheverry.project_ravelry.dades.autenticacio.URL_TOKEN
 import com.mataecheverry.project_ravelry.dades.xarxa.api.auth.RavelryAuthService
-import com.mataecheverry.project_ravelry.models.app_models.LoggedInUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -20,63 +17,88 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RavelryClient {
 
-    const val BASE_URL = URL_API
-    const val AUTH_BASE_URL = URL_AUTH
+    const val BASE_URL = URL_RAVELRY
+    const val AUTH_BASE_URL = URL_RAVELRY
     const val TOKEN_URL = URL_TOKEN
-    private var clientId = CLIENT_ID
-    private var clientSecret = CLIENT_SECRET
-    private var accessToken = ""
-    private var redirectURI = "ravelon://oauth-callback/ravelry"
+    var clientId = CLIENT_ID
+    var clientSecret = CLIENT_SECRET
+    var accessToken = ""
+    var authorizationToken = ""
+    var redirectURI = "project_ravelry://oauth-callback/ravelry/"
 
 
-
+//    private val oauthClient = OkHttpClient.Builder()
+//        .addInterceptor(authorizationInterceptor)
+//        .build()
 
     private val httpClient =  OkHttpClient.Builder()
         .addInterceptor { chain ->
-        if (accessToken.isEmpty()) {
-            runBlocking {
-                refreshToken()
+            var request = chain.request()
+            val response = chain.proceed(request)
+            val errorCode = response.code
+            val errorMessage = response.message
+
+            if (!response.isSuccessful){
+
+                Log.e("ERROR RETROFIT", "HTTP error: $errorCode - $errorMessage")
             }
-        }
-        Log.d("TOKEN --> ", "Token --> $accessToken")
-        val request = chain.request().newBuilder()
-            .header("Authorization", "Bearer $accessToken")
-            .build()
-        chain.proceed(request)
-    }.build()
+            else if (response.isSuccessful){
+                val code = response.code
+                val message = response.message
+                Log.e("RESPOSTA RETROFIT", "HTTP: $code - $message")
+            }
+            if (accessToken.isEmpty() || errorCode == 401) {
+                Log.d("TOKEN --> ", "Token --> $accessToken")
+                runBlocking {
+                    refreshToken()
+                }
+            }
+            request = chain.request().newBuilder()
+                .header("Authorization", "Bearer $accessToken")
+                .build()
+            response.close()
+            chain.proceed(request)
+        }.build()
+
 
     private val apiRetrofit : Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create(GsonBuilder().setLenient().create()))
+            .baseUrl("https://api.ravelry.com/")
+            .addConverterFactory(GsonConverterFactory.create())
             .client(httpClient)
             .build()
     }
-
-    val service: RavelryServei by lazy {
-        apiRetrofit.create(RavelryServei::class.java)
-    }
-
 
     private val authRetrofit = Retrofit.Builder()
         .baseUrl(AUTH_BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
+    val service: RavelryServei by lazy {
+        apiRetrofit.create(RavelryServei::class.java)
+    }
 
     private suspend fun refreshToken() = withContext(Dispatchers.IO) {
         val authService = authRetrofit.create(RavelryAuthService::class.java)
         val authHeader = Credentials.basic(clientId, clientSecret)
         try {
-            val response = authService.authenticate(grantType = "authorization_code", authorization = authHeader, email = LoggedInUser.user_mail, password = LoggedInUser.user_password, scope="offline patternstore-read deliveries-read")
-            if (response.accessToken.isNotEmpty()){
+            val response = authService.authenticate(
+                grantType = "authorization_code",
+                tokenType = "bearer",
+                redirectUri = redirectURI,
+                accessTokenUrl = TOKEN_URL,
+                clientId = CLIENT_ID,
+                clientSecret = CLIENT_SECRET,
+                authorization = authHeader,
+                scope = "offline patternstore-read deliveries-read",
+                state = "request_state"
+            )
+            if (response.accessToken.isNotEmpty()) {
                 accessToken = response.accessToken
             }
-        }
-        catch (ex: Exception){
+        } catch (ex: Exception) {
             Log.d("REFRESH_TOKEN --> ", "EXCEPTION --> $ex.printStackTrace() ¡")
             ex.printStackTrace()
         }
     }
-
 }

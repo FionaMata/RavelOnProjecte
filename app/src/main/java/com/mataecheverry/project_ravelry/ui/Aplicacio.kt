@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -31,7 +30,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -47,7 +45,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -59,7 +56,7 @@ import com.mataecheverry.project_ravelry.dades.autenticacio.AuthManager
 import com.mataecheverry.project_ravelry.dades.nav.Destinacio
 import com.mataecheverry.project_ravelry.dades.nav.NavigationCat
 import com.mataecheverry.project_ravelry.dades.nav.NavigationGraph
-import com.mataecheverry.project_ravelry.ui.theme.Project_RavelryTheme
+import com.mataecheverry.project_ravelry.models.app_models.AppUser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -92,22 +89,8 @@ val displaysWithBottomAppBar = listOf(
 
 //endregion
 
-@Preview
 @Composable
-fun AppDisplay (content: @Composable () -> Unit = {}){
-    Project_RavelryTheme {
-        Surface (
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ){
-            content()
-        }
-    }
-}
-
-@Composable
-fun Aplicacio(
-    content: @Composable ()-> Unit = {Text ("")})
+fun Aplicacio(content: @Composable ()-> Unit = {})
 {
     val controladorDeNavegacio = rememberNavController()
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
@@ -142,7 +125,6 @@ fun RavelryScaffold(
         Destinacio.Shops.genericPath -> topAppBarTitle = stringResource(NavigationCat.Shops.title)
         Destinacio.Register.genericPath -> topAppBarTitle = stringResource(NavigationCat.Register.title)
     }
-
 
     Scaffold(
         topBar = {
@@ -246,7 +228,6 @@ fun RavelryScaffold(
                                     painterResource(id = R.drawable.share),
                                     contentDescription = "Share icon")
                             }
-
                             else -> {}
                         }
                     }
@@ -319,7 +300,7 @@ fun RavelryDrawer(
             ){
                 AsyncImage (
                     //Aqui ha d'anar la imatge d'usuari. tirarem d'un async de moment
-                    model = {},
+                    model = AppUser.LoggedInUser.photo_url,
                     contentDescription = "User selected profile picture.",
                     modifier = Modifier
                         .fillMaxWidth()
@@ -328,16 +309,16 @@ fun RavelryDrawer(
                 Spacer (Modifier.height(10.dp))
                 HorizontalDivider(color = MaterialTheme.colorScheme.onSecondaryContainer,modifier= Modifier.height(15.dp))
                 Spacer (Modifier.height(10.dp))
-                NavigationCat.entries.forEach(){
+                displaysWithDrawer.forEach(){
                     NavigationDrawerItem  (
-                        label = { Text(it.previousPath) },
-                        selected = rutaActual.contains(it.previousPath),
+                        label = { Text(it) },
+                        selected = rutaActual.contains(it),
                         //icon = {Icon (imageVector = it.icon, it.title)},
                         onClick = {
                             coroutineScope.launch {
                                 estatDrawer.close()
                             }
-                            navigationController.navigate(it.previousPath) {
+                            navigationController.navigate(it) {
                                 popUpTo(navigationController.graph.findStartDestination().id){
                                     saveState = true
                                 }
