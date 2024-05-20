@@ -1,22 +1,23 @@
 package com.mataecheverry.project_ravelry.dades.xarxa.api.auth
 
+import com.mataecheverry.project_ravelry.dades.autenticacio.CLIENT_ID
+import com.mataecheverry.project_ravelry.dades.autenticacio.CLIENT_SECRET
+import nl.myndocs.oauth2.token.AccessToken
+import retrofit2.Response
 import retrofit2.http.Field
-import retrofit2.http.Header
+import retrofit2.http.FormUrlEncoded
 import retrofit2.http.Headers
 import retrofit2.http.POST
 
-interface RavelryAuthService {
-    @Headers("token")
+public interface RavelryAuthService {
+    @Headers("Accept: application/json")
     @POST("oauth2/auth")
-    suspend fun authenticate(
+    @FormUrlEncoded
+    suspend fun  getAccessToken(
+        @Field("client_id") clientId: String = CLIENT_ID,
+        @Field("client_secret") clientSecret: String = CLIENT_SECRET,
+        @Field("code") code: String,
         @Field("grant_type") grantType: String = "authorization_code",
-        @Field("token_type") tokenType: String = "bearer",
-        @Field("redirect_uri") redirectUri: String ="",
-        @Field("access_token_url") accessTokenUrl: String = "",
-        @Field("client_id") clientId: String = "",
-        @Field("client_secret")  clientSecret: String ="",
-        @Field("scope")  scope: String ="",
-        @Field("state")  state: String = "",
-        @Header("authorization") authorization: String
-    ): RavelryAuthResponse
+        @Field("redirect_uri") redirectUri: String
+    ): Response<AccessToken>
 }

@@ -3,13 +3,8 @@ package com.mataecheverry.project_ravelry.dades.xarxa.api
 import android.util.Log
 import com.mataecheverry.project_ravelry.dades.autenticacio.CLIENT_ID
 import com.mataecheverry.project_ravelry.dades.autenticacio.CLIENT_SECRET
-import com.mataecheverry.project_ravelry.dades.autenticacio.URL_RAVELRY
-import com.mataecheverry.project_ravelry.dades.autenticacio.URL_TOKEN
-import com.mataecheverry.project_ravelry.dades.xarxa.api.auth.RavelryAuthService
-import kotlinx.coroutines.Dispatchers
+import com.mataecheverry.project_ravelry.dades.autenticacio.URL_AUTH
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -17,14 +12,11 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RavelryClient {
 
-    const val BASE_URL = URL_RAVELRY
-    const val AUTH_BASE_URL = URL_RAVELRY
-    const val TOKEN_URL = URL_TOKEN
     var clientId = CLIENT_ID
     var clientSecret = CLIENT_SECRET
     var accessToken = ""
     var authorizationToken = ""
-    var redirectURI = "project_ravelry://oauth-callback/ravelry/"
+    var redirectURI = "project_ravelry://callback"
 
 
 //    private val oauthClient = OkHttpClient.Builder()
@@ -50,7 +42,7 @@ object RavelryClient {
             if (accessToken.isEmpty() || errorCode == 401) {
                 Log.d("TOKEN --> ", "Token --> $accessToken")
                 runBlocking {
-                    refreshToken()
+                    //refreshToken()
                 }
             }
             request = chain.request().newBuilder()
@@ -70,7 +62,7 @@ object RavelryClient {
     }
 
     private val authRetrofit = Retrofit.Builder()
-        .baseUrl(AUTH_BASE_URL)
+        .baseUrl(URL_AUTH)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
@@ -78,27 +70,23 @@ object RavelryClient {
         apiRetrofit.create(RavelryServei::class.java)
     }
 
-    private suspend fun refreshToken() = withContext(Dispatchers.IO) {
-        val authService = authRetrofit.create(RavelryAuthService::class.java)
-        val authHeader = Credentials.basic(clientId, clientSecret)
-        try {
-            val response = authService.authenticate(
-                grantType = "authorization_code",
-                tokenType = "bearer",
-                redirectUri = redirectURI,
-                accessTokenUrl = TOKEN_URL,
-                clientId = CLIENT_ID,
-                clientSecret = CLIENT_SECRET,
-                authorization = authHeader,
-                scope = "offline patternstore-read deliveries-read",
-                state = "request_state"
-            )
-            if (response.accessToken.isNotEmpty()) {
-                accessToken = response.accessToken
-            }
-        } catch (ex: Exception) {
-            Log.d("REFRESH_TOKEN --> ", "EXCEPTION --> $ex.printStackTrace() ¡")
-            ex.printStackTrace()
-        }
-    }
+//    private suspend fun refreshToken() = withContext(Dispatchers.IO) {
+//        val authService = authRetrofit.create(RavelryAuthService::class.java)
+//        val authHeader = Credentials.basic(clientId, clientSecret)
+//        try {
+//            val response = authService.getAccessToken(
+//
+//                clientId = CLIENT_ID,
+//                clientSecret = CLIENT_SECRET,
+//                code = code,
+//
+//                )
+//            if (response.accessToken.isNotEmpty()) {
+//                accessToken = response.accessToken
+//            }
+//        } catch (ex: Exception) {
+//            Log.d("REFRESH_TOKEN --> ", "EXCEPTION --> $ex.printStackTrace() ¡")
+//            ex.printStackTrace()
+//        }
+//    }
 }

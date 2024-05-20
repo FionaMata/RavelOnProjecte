@@ -1,10 +1,7 @@
 package com.mataecheverry.project_ravelry.ui.pantalles
 
 import android.app.Activity
-import android.content.Intent
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -51,12 +48,13 @@ import com.mataecheverry.project_ravelry.MainActivity
 import com.mataecheverry.project_ravelry.R
 import com.mataecheverry.project_ravelry.dades.autenticacio.AuthManager
 import com.mataecheverry.project_ravelry.dades.autenticacio.AuthReply
-import com.mataecheverry.project_ravelry.dades.autenticacio.URL_LOGIN_RAVELRY
 import com.mataecheverry.project_ravelry.models.app_models.AppUser
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 //Caldrà fer el procediment del login per open id aqui!
+
+
 @Composable
 fun PantallaLogin(
     mainActivity: MainActivity,
@@ -73,22 +71,36 @@ fun PantallaLogin(
     var checked by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf(false) }
     var errorMessege by remember { mutableStateOf("") }
-    val context = LocalContext.current
+    val context = LocalContext.current as MainActivity
     val area = rememberCoroutineScope()
 
-    //Funció per obrir el navegador:
+    //Fem la crida per obrir el web
+
+
+    //region eric
     val openIdSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK){
-
-
-            //No cal fer res més, només hem d'obrir el navegador i recuperar el token d'autorització.
+            val intent = result.data
+            when (val authReply = authManager.handleIntent(intent!!)) {
+                is AuthReply.Success -> {
+                    // Process the token and navigate to home
+                    val token = authReply.dades
+                    goToHome()
+                }
+                is AuthReply.Failed -> {
+                    // Handle the error
+                    error = true
+                    errorMessege = authReply.errorMessage
+                }
+            }
+        } else {
+            // Handle the error or cancellation case
+            error = true
+            errorMessege = "Error. Estem al cancel del launcher!"
         }
-        else {
-
-        }
-
     }
+    //endregion
 
     Column(
         modifier = Modifier
@@ -206,7 +218,7 @@ fun PantallaLogin(
                 BotoXXSS(
                     onClick = {
                         area.launch {
-                            authManager.signInRavelryOpenId(launcherRavelry = openIdSignInLauncher)
+                            authManager.iniciDeSessioAmbRavelry( openIdSignInLauncher)
                         }
                     },
                     icon = R.drawable.typeselectedstateenabled,
@@ -305,14 +317,4 @@ suspend fun emailAndPasswordLogin(
         }
     }
 }
-
-suspend fun obraNavegador(launcher: ActivityResultLauncher<Intent>) //context: Context,
-{
-    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(URL_LOGIN_RAVELRY))
-    //Envés de fer un startActivity(), utilitzem el launcher creat :).
-    launcher.launch(intent)
-}
-
-
-
 
