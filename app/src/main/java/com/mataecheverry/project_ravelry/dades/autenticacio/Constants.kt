@@ -9,7 +9,7 @@ const val LOGIN_URL = "https://www.ravelry.com/oauth2/auth/"  //OAUTH2/AUTH
 
 
 
-const val CALLBACK = "com.mataecheverry.project_ravelry"
+const val CALLBACK = "https://ravelschool-bc44d.firebaseapp.com/__/auth/handler"
 const val URL_TOKEN = "https://www.ravelry.com/oauth2/token/"
 
 

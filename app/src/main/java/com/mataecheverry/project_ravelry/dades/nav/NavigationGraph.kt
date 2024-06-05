@@ -28,7 +28,6 @@ fun NavigationGraph (
     var user: FirebaseUser? by remember { mutableStateOf<FirebaseUser?>(null) }
     LaunchedEffect(key1 = Unit) {
         user = authManager.getUser()
-
     }
 
     //region variables:
@@ -85,7 +84,7 @@ fun NavigationGraph (
             route = NavigationCat.Login.previousPath)
         {
             composable(route = Destinacio.Login.genericPath){
-                PantallaLogin(MainActivity(), authManager, goToRegister, recoverUserInformation, goToHome)
+                PantallaLogin(MainActivity(), authManager, androidx.lifecycle.viewmodel.compose.viewModel(), goToRegister, recoverUserInformation, goToHome)
             }
             composable(route = Destinacio.Register.genericPath){
                 PantallaRegistry(authManager, goBack, goToHome)

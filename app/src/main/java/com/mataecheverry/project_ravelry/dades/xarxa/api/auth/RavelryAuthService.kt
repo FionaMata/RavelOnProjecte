@@ -10,8 +10,8 @@ import retrofit2.http.Headers
 import retrofit2.http.POST
 
 public interface RavelryAuthService {
-    @Headers("Accept: application/json")
-    @POST("oauth2/auth")
+    @Headers("Accept: application/json") //retrofit afegeix aquest header i ravelry sap que ha d'enviar json per assegurar-nos
+    @POST("oauth2/token") //abans tenia oauth. Ha de ser token
     @FormUrlEncoded
     suspend fun getAccessToken(
         @Field("client_id") clientId: String = CLIENT_ID,

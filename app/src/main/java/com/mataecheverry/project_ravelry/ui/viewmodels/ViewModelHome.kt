@@ -63,8 +63,6 @@ class ViewModelHome : ViewModel(){
         else
             Log.d("USUARI", "Usuari no logged  in")
     }
-
-
 }
 
 

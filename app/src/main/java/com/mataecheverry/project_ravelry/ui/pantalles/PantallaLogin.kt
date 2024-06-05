@@ -30,6 +30,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +52,7 @@ import com.mataecheverry.project_ravelry.dades.autenticacio.AuthManager
 import com.mataecheverry.project_ravelry.dades.autenticacio.AuthReply
 import com.mataecheverry.project_ravelry.dades.xarxa.api.RavelryClient
 import com.mataecheverry.project_ravelry.models.app_models.AppUser
+import com.mataecheverry.project_ravelry.ui.viewmodels.PantallaLoginViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
@@ -61,11 +63,13 @@ import kotlinx.coroutines.tasks.await
 fun PantallaLogin(
     mainActivity: MainActivity,
     authManager: AuthManager,
-
+    viewModel: PantallaLoginViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     goToRegister: () -> Unit,
     goToRecover: () -> Unit,
     goToHome: () -> Unit,
 ) {
+
+    val state = viewModel.state.collectAsState()
 
 
     var email by remember { mutableStateOf("") }
@@ -78,44 +82,32 @@ fun PantallaLogin(
     val area = rememberCoroutineScope()
 
 
-
-    //region eric
     val openIdSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val intent = result.data
-            when (val authReply = authManager.handleIntent(intent!!)) {
-                is AuthReply.Success -> {
-                    val code = authReply.dades
-                    area.launch {
-                        when (val tokenReply = RavelryClient.exchangeToken(code)) {
-                            is AuthReply.Success -> {
-                                // Store the token and navigate to home
-
-                                RavelryClient.accessToken = tokenReply.dades.accessToken
-                                goToHome()
-                            }
-                            is AuthReply.Failed -> {
-                                // Handle the error
-                                Log.d("ERROR_INTERCANVI", tokenReply.errorMessage)
-                                error = true
-                            }
-                        }
+            if (intent != null) {
+                viewModel.handleAuthResponse(intent,
+                    onSuccess = { accessToken ->
+                        // Store the token and navigate to the home screen
+                        RavelryClient.accessToken = accessToken
+                       goToHome()
+                    },
+                    onError = { errorMessage ->
+                        // Handle the error
+                        Log.d("ERROR_LOGIN", errorMessage)
+                        error = true
                     }
-                }
-                is AuthReply.Failed -> {
-                    Log.d("ERRORLOGIN", authReply.errorMessage)
-                    error = true
-                }
+                )
+            } else {
+                Log.d("ERROR_LOGIN", "Intent data is null")
+                error = true
             }
         } else {
-            Log.d("ERRORLOGIN", result.data.toString())
+            Log.d("ERROR_LOGIN", "Authentication failed")
             error = true
         }
     }
-
-
-    //endregion
 
     Column(
         modifier = Modifier
@@ -235,8 +227,8 @@ fun PantallaLogin(
                     {
                         area.launch {
                             authManager.iniciDeSessioAmbRavelry(openIdSignInLauncher)
-                            goToHome()
                         }
+                        goToHome()
                     },
                     icon = R.drawable.typeselectedstateenabled,
                     nomXarxa = "Ravelry"

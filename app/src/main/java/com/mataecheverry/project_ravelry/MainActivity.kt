@@ -7,12 +7,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.mataecheverry.project_ravelry.dades.autenticacio.AuthManager
 import com.mataecheverry.project_ravelry.ui.Aplicacio
 import com.mataecheverry.project_ravelry.ui.theme.Project_RavelryTheme
 
 class MainActivity : ComponentActivity() {
-    private val authManager: AuthManager by lazy { AuthManager(this) }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -25,5 +23,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+
     }
+
 }
