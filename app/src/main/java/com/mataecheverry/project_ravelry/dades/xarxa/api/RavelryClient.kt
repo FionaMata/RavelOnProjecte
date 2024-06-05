@@ -1,10 +1,16 @@
 package com.mataecheverry.project_ravelry.dades.xarxa.api
 
 import android.util.Log
+import com.mataecheverry.project_ravelry.dades.autenticacio.AuthReply
 import com.mataecheverry.project_ravelry.dades.autenticacio.CLIENT_ID
 import com.mataecheverry.project_ravelry.dades.autenticacio.CLIENT_SECRET
-import com.mataecheverry.project_ravelry.dades.autenticacio.URL_AUTH
+import com.mataecheverry.project_ravelry.dades.autenticacio.LOGIN_URL
+import com.mataecheverry.project_ravelry.dades.xarxa.api.auth.RavelryAuthService
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import nl.myndocs.oauth2.token.AccessToken
+import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -16,12 +22,9 @@ object RavelryClient {
     var clientSecret = CLIENT_SECRET
     var accessToken = ""
     var authorizationToken = ""
-    var redirectURI = "project_ravelry://callback"
+    var redirectURI = "https://ravelschool-bc44d.firebaseapp.com/__/auth/handler"
 
 
-//    private val oauthClient = OkHttpClient.Builder()
-//        .addInterceptor(authorizationInterceptor)
-//        .build()
 
     private val httpClient =  OkHttpClient.Builder()
         .addInterceptor { chain ->
@@ -42,7 +45,7 @@ object RavelryClient {
             if (accessToken.isEmpty() || errorCode == 401) {
                 Log.d("TOKEN --> ", "Token --> $accessToken")
                 runBlocking {
-                    //refreshToken()
+                    refreshToken()
                 }
             }
             request = chain.request().newBuilder()
@@ -62,7 +65,7 @@ object RavelryClient {
     }
 
     private val authRetrofit = Retrofit.Builder()
-        .baseUrl(URL_AUTH)
+        .baseUrl(LOGIN_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
@@ -70,23 +73,50 @@ object RavelryClient {
         apiRetrofit.create(RavelryServei::class.java)
     }
 
-//    private suspend fun refreshToken() = withContext(Dispatchers.IO) {
-//        val authService = authRetrofit.create(RavelryAuthService::class.java)
-//        val authHeader = Credentials.basic(clientId, clientSecret)
-//        try {
-//            val response = authService.getAccessToken(
-//
-//                clientId = CLIENT_ID,
-//                clientSecret = CLIENT_SECRET,
-//                code = code,
-//
-//                )
+    suspend fun exchangeToken(code: String): AuthReply<AccessToken> {
+        val authService = authRetrofit.create(RavelryAuthService::class.java)
+        return try {
+            val response = authService.getAccessToken(
+                clientId = CLIENT_ID,
+                clientSecret = CLIENT_SECRET,
+                code = code,
+                redirectUri = RavelryClient.redirectURI,
+                grantType = "authorization_code"
+            )
+            if (response.isSuccessful) {
+                response.body()?.let { accessToken ->
+                    RavelryClient.accessToken = accessToken.accessToken
+                    AuthReply.Success(accessToken)
+                } ?: AuthReply.Failed("Failed to get access token")
+            } else {
+                AuthReply.Failed("Failed to get access token: ${response.errorBody()?.string()}")
+            }
+        } catch (e: Exception) {
+            AuthReply.Failed("Exception: ${e.message}")
+        }
+    }
+
+
+    private suspend fun refreshToken() = withContext(Dispatchers.IO) {
+        val authService = authRetrofit.create(RavelryAuthService::class.java)
+        val authHeader = Credentials.basic(clientId, clientSecret)
+        try {
+            val response = authService.getAccessToken(
+
+                clientId = CLIENT_ID,
+                clientSecret = CLIENT_SECRET,
+                code = accessToken, //hauria de ser el token que rebem per primer cop
+                redirectURI,
+                grantType = "authorization_code")
+
+            if (response.isSuccessful && response.body()?.refreshToken != null)
+                accessToken = response.body()?.refreshToken.toString()
 //            if (response.accessToken.isNotEmpty()) {
 //                accessToken = response.accessToken
-//            }
-//        } catch (ex: Exception) {
-//            Log.d("REFRESH_TOKEN --> ", "EXCEPTION --> $ex.printStackTrace() ¡")
-//            ex.printStackTrace()
-//        }
-//    }
+
+        } catch (ex: Exception) {
+            Log.d("REFRESH_TOKEN --> ", "EXCEPTION --> $ex.printStackTrace() ¡")
+            ex.printStackTrace()
+        }
+    }
 }

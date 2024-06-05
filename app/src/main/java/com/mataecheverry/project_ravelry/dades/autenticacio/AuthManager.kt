@@ -3,6 +3,7 @@ package com.mataecheverry.project_ravelry.dades.autenticacio
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.firebase.auth.FirebaseAuth
@@ -96,10 +97,14 @@ class AuthManager (private val context: Context) {
 
     suspend fun iniciDeSessioAmbRavelry(launcherIniciDeSessioAmbRavelry: ActivityResultLauncher<Intent>) {
         val intent = Intent(
+            //const val LOGIN_URL = "https://www.ravelry.com/oauth2/auth."
+            /** CAL CONTROL DE LA REDIRECT URI :) */
             Intent.ACTION_VIEW, Uri.parse(
-                "$URL_AUTH?client_id=$CLIENT_ID&scope=offline&redirect_uri=${RavelryClient.redirectURI}"
+                "$LOGIN_URL?response_type=code&client_id=$CLIENT_ID&redirect_uri=${"https://ravelschool-bc44d.firebaseapp.com/__/auth/handler"}&state=sheepbaa&scope=offline"
             )
+
         )
+        handleIntent(intent)
         launcherIniciDeSessioAmbRavelry.launch(intent)
 
 
@@ -123,11 +128,12 @@ class AuthManager (private val context: Context) {
                         val response = ravClient.getAccessToken(
                             clientId = CLIENT_ID,
                             clientSecret = CLIENT_SECRET,
-                            code = "code",
+                            code = code,
                             redirectUri = RavelryClient.redirectURI
                             )
                         if (response.isSuccessful){
                             val accessToken = response.body()?.accessToken ?: "No token received"
+                            Log.d("ACCESTOKEN", accessToken)
                             AuthReply.Success(accessToken)
                         } else {
                             AuthReply.Failed("Failed to retrieve token")
@@ -143,53 +149,9 @@ class AuthManager (private val context: Context) {
     }
 
 
-//region
-    //Si no funciona amb launcherRavelry: Activity, li passem la MainActivity().
-//    suspend fun signInRavelryOpenId(launcherRavelry: ManagedActivityResultLauncher<Intent, ActivityResult>) {
-//
-//        val pendingResultTask = firebaseAuth.pendingAuthResult
-//
-//        if (pendingResultTask != null) {
-//            pendingResultTask.await()
-//            //Log.d("LoggedInUser", AppUser.LoggedInUser.email)
-//
-//            AuthReply.Success(firebaseAuth.currentUser!!)
-//
-//        } else {
-//            val oidcProvider = OAuthProvider.newBuilder("oidc.ravelry")
-//                .addCustomParameter("login_hint", "user@example.com")
-//                .build()
-//            //Fem anar el listener, com a equivalent del .await()
-//            firebaseAuth.startActivityForSignInWithProvider(MainActivity(), oidcProvider)
-//                .addOnSuccessListener {
-//
-//                    val firebaseUser = it.user
-//                    Log.d("LoggedInUser", firebaseUser?.displayName.toString())
-//                    AuthReply.Success(it.user)
-//                }
-//                .addOnFailureListener {oi900
-//                    AuthReply.Failed("Error logging in with Ravelry. $it.message")
-//                }
-//        }
-//
-//    }
-//
-//    fun manageRavleryLoginResult(result: ActivityResult) {
-//        val task = firebaseAuth.pendingAuthResult
-//        if (task != null) {
-//            task.addOnSuccessListener {
-//                AuthReply.Success(it)
-//            }
-//            task.addOnFailureListener {
-//                AuthReply.Failed("Could not retrieve de User. Something went wrong :( ${it.localizedMessage}")
-//            }
-//        } else {
-//            AuthReply.Failed("PendingAuthResult is null :(")
-//        }
-//    }
+
 }
 
-//endregion
 
 
 

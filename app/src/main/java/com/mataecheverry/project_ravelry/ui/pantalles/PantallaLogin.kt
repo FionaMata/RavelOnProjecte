@@ -1,6 +1,7 @@
 package com.mataecheverry.project_ravelry.ui.pantalles
 
 import android.app.Activity
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -48,6 +49,7 @@ import com.mataecheverry.project_ravelry.MainActivity
 import com.mataecheverry.project_ravelry.R
 import com.mataecheverry.project_ravelry.dades.autenticacio.AuthManager
 import com.mataecheverry.project_ravelry.dades.autenticacio.AuthReply
+import com.mataecheverry.project_ravelry.dades.xarxa.api.RavelryClient
 import com.mataecheverry.project_ravelry.models.app_models.AppUser
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -59,6 +61,7 @@ import kotlinx.coroutines.tasks.await
 fun PantallaLogin(
     mainActivity: MainActivity,
     authManager: AuthManager,
+
     goToRegister: () -> Unit,
     goToRecover: () -> Unit,
     goToHome: () -> Unit,
@@ -66,7 +69,7 @@ fun PantallaLogin(
 
 
     var email by remember { mutableStateOf("") }
-    var password by remember {mutableStateOf("")}
+    var password by remember { mutableStateOf("") }
     var currentUser by remember { mutableStateOf("") }
     var checked by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf(false) }
@@ -74,32 +77,44 @@ fun PantallaLogin(
     val context = LocalContext.current as MainActivity
     val area = rememberCoroutineScope()
 
-    //Fem la crida per obrir el web
 
 
     //region eric
     val openIdSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK){
+        if (result.resultCode == Activity.RESULT_OK) {
             val intent = result.data
             when (val authReply = authManager.handleIntent(intent!!)) {
                 is AuthReply.Success -> {
-                    // Process the token and navigate to home
-                    val token = authReply.dades
-                    goToHome()
+                    val code = authReply.dades
+                    area.launch {
+                        when (val tokenReply = RavelryClient.exchangeToken(code)) {
+                            is AuthReply.Success -> {
+                                // Store the token and navigate to home
+
+                                RavelryClient.accessToken = tokenReply.dades.accessToken
+                                goToHome()
+                            }
+                            is AuthReply.Failed -> {
+                                // Handle the error
+                                Log.d("ERROR_INTERCANVI", tokenReply.errorMessage)
+                                error = true
+                            }
+                        }
+                    }
                 }
                 is AuthReply.Failed -> {
-                    // Handle the error
+                    Log.d("ERRORLOGIN", authReply.errorMessage)
                     error = true
-                    errorMessege = authReply.errorMessage
                 }
             }
         } else {
-            // Handle the error or cancellation case
+            Log.d("ERRORLOGIN", result.data.toString())
             error = true
-            errorMessege = "Error. Estem al cancel del launcher!"
         }
     }
+
+
     //endregion
 
     Column(
@@ -216,9 +231,11 @@ fun PantallaLogin(
                 HorizontalDivider(Modifier.padding(10.dp))
 
                 BotoXXSS(
-                    onClick = {
+                    onClick =
+                    {
                         area.launch {
-                            authManager.iniciDeSessioAmbRavelry( openIdSignInLauncher)
+                            authManager.iniciDeSessioAmbRavelry(openIdSignInLauncher)
+                            goToHome()
                         }
                     },
                     icon = R.drawable.typeselectedstateenabled,
@@ -317,4 +334,7 @@ suspend fun emailAndPasswordLogin(
         }
     }
 }
+
+
+
 
