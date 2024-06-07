@@ -35,10 +35,12 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -89,6 +91,7 @@ val displaysWithBottomAppBar = listOf(
 
 //endregion
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Aplicacio(content: @Composable ()-> Unit = {})
 {
@@ -98,9 +101,12 @@ fun Aplicacio(content: @Composable ()-> Unit = {})
     val navBackStackEntry by controladorDeNavegacio.currentBackStackEntryAsState()
     val rutaActual = navBackStackEntry?.destination?.route ?: ""
     val snackbarHostState = remember{ SnackbarHostState()}
-    val authManager: AuthManager = AuthManager(LocalContext.current)
+    val bottomBarState: MutableState<Boolean> = rememberSaveable {
+        (mutableStateOf(true))
+    }
+    val authManager = AuthManager(LocalContext.current)
 
-    RavelryScaffold(controladorDeNavegacio, coroutineScope, estatDrawer, rutaActual, snackbarHostState, authManager)
+    RavelryScaffold(controladorDeNavegacio, coroutineScope, estatDrawer, rutaActual, bottomBarState, snackbarHostState, authManager)
 
 }
 
@@ -111,14 +117,15 @@ fun RavelryScaffold(
     coroutineScope: CoroutineScope,
     estatDrawer: DrawerState,
     currentPath: String,
+    bottomBarState: MutableState<Boolean>,
     snackbarHostState: SnackbarHostState,
     authManager: AuthManager
 ){
     var topAppBarTitle = ""
-    val currentScreen by remember { mutableStateOf<Destinacio>(Destinacio.Home) }
 
     when (currentPath){
         Destinacio.Home.genericPath -> topAppBarTitle = stringResource(NavigationCat.Home.title)
+        Destinacio.Recover.genericPath -> topAppBarTitle = stringResource(NavigationCat.Recover.title)
         Destinacio.Favorites.genericPath -> topAppBarTitle = stringResource(NavigationCat.Favorites.title)
         Destinacio.Patterns.genericPath -> topAppBarTitle = stringResource(NavigationCat.Patterns.title)
         Destinacio.Search.genericPath -> topAppBarTitle = stringResource(NavigationCat.Search.title)
@@ -164,19 +171,20 @@ fun RavelryScaffold(
                 }
             ) },
         bottomBar = {
-            if (displaysWithBottomAppBar.contains(currentScreen)){
                 BottomAppBar (
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     contentColor = MaterialTheme.colorScheme.primary,
                     contentPadding = BottomAppBarDefaults.ContentPadding,
+
                 ){
                     Row(horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
 
                     ){
-                        when(currentScreen) {
-                            Destinacio.Home -> {
+                        when(currentPath) {
+                            Destinacio.Home.genericPath ->
+                                {
                                 Icon(
                                     painterResource(id = R.drawable.search),
                                     contentDescription = "Icona d'una lupa :)",
@@ -188,12 +196,12 @@ fun RavelryScaffold(
                                     modifier = Modifier
                                         .size(25.dp))
                             }
-                            Destinacio.Patterns -> {
+                            Destinacio.Patterns.genericPath -> {
                                 Icon(
                                     painterResource(id = R.drawable.search),
                                     contentDescription = "Icona d'una lupa :)")
                             }
-                            Destinacio.PatternDetails -> {
+                            Destinacio.PatternDetails.genericPath -> {
                                 Icon(
                                     painterResource(id = R.drawable.home),
                                     contentDescription = "Icona d'una casa")
@@ -204,7 +212,7 @@ fun RavelryScaffold(
                                     painterResource(id = R.drawable.read),
                                     contentDescription = "Read Icon")
                             }
-                            Destinacio.Projects -> {
+                            Destinacio.Projects.genericPath -> {
                                 Icon(
                                     painterResource(id = R.drawable.home),
                                     contentDescription = "Read Icon")
@@ -212,7 +220,7 @@ fun RavelryScaffold(
                                     painterResource(id = R.drawable.search),
                                     contentDescription = "Magnifying glass")
                             }
-                            Destinacio.ProjectDetails -> {
+                            Destinacio.ProjectDetails.genericPath -> {
                                 Icon(
                                     painterResource(id = R.drawable.home),
                                     contentDescription = "Home Icon")
@@ -223,12 +231,13 @@ fun RavelryScaffold(
                                     painterResource(id = R.drawable.heart),
                                     contentDescription = "Favorite Icon")
                             }
-                            Destinacio.Profile -> {
+                            Destinacio.Profile.genericPath -> {
                                 Icon(
                                     painterResource(id = R.drawable.share),
                                     contentDescription = "Share icon")
                             }
-                            else -> {}
+                            else -> {
+                                bottomBarState.value = false
                         }
                     }
                 }
@@ -238,33 +247,6 @@ fun RavelryScaffold(
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)
         },
-        //De normal ha d'estar amagat
-//        floatingActionButton = {
-//            ExtendedFloatingActionButton(
-//                text = {Text("Snaki snsack snack")},
-//                icon = {Icon(Icons.Filled.Face,
-//                    contentDescription = "Carona d'exemple")},
-//                onClick = {
-//                    coroutineScope.launch {
-//                        val result = snackbarHostState
-//                            .showSnackbar(
-//                                message = "snackisnak!",
-//                                actionLabel = "snak!",
-//                                duration = SnackbarDuration.Short
-//                            )
-//                        when (result) {
-//                            SnackbarResult.ActionPerformed -> {
-//                                //QUAN FEM AIXÒ
-//                            }
-//
-//                            SnackbarResult.Dismissed -> {
-//                                //QUAN HO DEIXEM DE FER
-//                            }
-//                        }
-//                    }
-//                }
-//            )
-//        }
     ) {paddingValues ->
         RavelryDrawer(
             navigationController,
@@ -272,7 +254,8 @@ fun RavelryScaffold(
             estatDrawer,
             modifier = Modifier.padding(paddingValues),
             rutaActual = currentPath,
-            authManager = authManager)
+            authManager = authManager,
+            snackbarHostState)
     }
 }
 
@@ -284,7 +267,8 @@ fun RavelryDrawer(
     estatDrawer: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
     modifier: Modifier,
     rutaActual: String,
-    authManager: AuthManager
+    authManager: AuthManager,
+    snackbarHostState: SnackbarHostState
 
 ){
     ModalNavigationDrawer(
@@ -345,7 +329,6 @@ fun RavelryDrawer(
         },
         gesturesEnabled = rutaActual in displaysWithDrawer
     ) {
-        NavigationGraph(navigationController)
+        NavigationGraph(navigationController, snackbarHostState)
     }
-
 }

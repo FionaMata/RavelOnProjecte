@@ -1,51 +1,66 @@
 package com.mataecheverry.project_ravelry.ui.viewmodels
 
 import android.content.Intent
+import android.net.Uri
+import androidx.activity.result.ActivityResultLauncher
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.mataecheverry.project_ravelry.dades.autenticacio.AuthReply
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 import com.mataecheverry.project_ravelry.dades.autenticacio.CALLBACK
-import com.mataecheverry.project_ravelry.dades.autenticacio.FirestoreManager
-import com.mataecheverry.project_ravelry.dades.xarxa.api.RavelryClient
+import com.mataecheverry.project_ravelry.dades.autenticacio.CLIENT_ID
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.StateFlow
 
 
 class PantallaLoginViewModel: ViewModel() {
 
-    private var _state = MutableStateFlow<LoginState>(LoginState())
-    val state = _state.asStateFlow()
-    var firestoreManager: FirestoreManager = FirestoreManager()
+    private val _state = MutableStateFlow(LoginState())
+    val state: StateFlow<LoginState> = _state
 
-    fun handleAuthResponse(intent: Intent, onSuccess: (String)-> Unit, onError: (String)-> Unit){
-        val uri = intent.data
-        if (uri != null && uri.toString().startsWith(CALLBACK)) {
-            val code = uri.getQueryParameter("code")
-            if (code != null) {
-                viewModelScope.launch {
-                    when (val tokenReply = RavelryClient.exchangeToken(code)) {
-                        is AuthReply.Success -> {
-                            _state.value = state.value.copy(isSuccessful = true)
-                            onSuccess(tokenReply.dades.accessToken)
-                        }
-                        is AuthReply.Failed -> {
-                            onError(tokenReply.errorMessage)
-                        }
-                    }
-                }
-            } else {
-                onError("Authorization code not found")
-            }
-        } else {
-            onError("Invalid intent data")
-        }
+    private val firebaseAuth: FirebaseAuth by lazy {
+        Firebase.auth
     }
+
+    fun startSignInWithRavelry(launcher: ActivityResultLauncher<Intent>) {
+        val loginUrl = "https://www.ravelry.com/oauth2/auth"
+        val intent = Intent(
+            Intent.ACTION_VIEW, Uri.parse(
+                "$loginUrl?response_type=code&client_id=$CLIENT_ID&redirect_uri=$CALLBACK&state=sheepbaa&scope=offline"
+            )
+        )
+        launcher.launch(intent)
+    }
+
+//    fun handleAuthResponse(intent: Intent, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
+//        val uri = intent.data
+//        if (uri != null && uri.toString().startsWith(CALLBACK)) {
+//            val code = uri.getQueryParameter("code")
+//            if (code != null) {
+//                viewModelScope.launch {
+//                    when (val tokenReply = RavelryClient.exchangeToken(code)) {
+//                        is AuthReply.Success -> {
+//                            _state.value = LoginState(isSuccessful = true)
+//                            onSuccess(tokenReply.dades.accessToken)
+//                        }
+//
+//                        is AuthReply.Failed -> {
+//                            onError(tokenReply.errorMessage)
+//                        }
+//                    }
+//                }
+//            } else {
+//                AuthReply.Failed("Authorization code not found")
+//            }
+//        } else {
+//            AuthReply.Failed("Invalid intent data")
+//        }
+//    }
 }
 
-
-
 data class LoginState(
-    var isSuccessful: Boolean = false
+    val isSuccessful: Boolean = false,
+    val accessToken: String? = null,
+    val error: String? = null
 )
 

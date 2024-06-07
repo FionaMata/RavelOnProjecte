@@ -6,9 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.mataecheverry.project_ravelry.dades.autenticacio.FirestoreManager
-import com.mataecheverry.project_ravelry.dades.xarxa.api.RavelryClient
-import com.mataecheverry.project_ravelry.dades.xarxa.api.RavelryHelperImpl
-import com.mataecheverry.project_ravelry.models.api_models.toAppPattern
 import com.mataecheverry.project_ravelry.models.app_models.AppPattern
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,40 +16,40 @@ class ViewModelHome : ViewModel(){
     private var _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state.asStateFlow()
     val fsm: FirestoreManager = FirestoreManager()
-    val apiHelper = RavelryHelperImpl(RavelryClient.service)
+    //val apiHelper = RavelryHelperImpl(RavelryClient.service)
 
     init {
-        loadHotRightNowPatterns()
-        loadDebutPatterns()
+//        loadHotRightNowPatterns()
+//        loadDebutPatterns()
     }
 
     fun loadHotRightNowPatterns(){
         _state.value = state.value.copy(loading = true)
         viewModelScope.launch {
-            apiHelper.getHotRightNow()
-                .collect(){ result ->
-                    _state.value = state.value.copy(
-                        loading = false,
-                        patterns = result.patterns.map{
-                            it.toAppPattern()
-                        }
-                    )
-                }
+//            apiHelper.getHotRightNow()
+//                .collect(){ result ->
+//                    _state.value = state.value.copy(
+//                        loading = false,
+//                        patterns = result.patterns.map{
+//                            it.toAppPattern()
+//                        }
+//                    )
+//                }
         }
     }
 
     fun loadDebutPatterns(){
         _state.value = _state.value.copy(loading = true)
         viewModelScope.launch {
-            apiHelper.getDebutPatterns()
-                .collect(){ result ->
-                    _state.value = state.value.copy(
-                        loading = false,
-                        patterns = result.patterns.map{
-                            it.toAppPattern()
-                        }
-                    )
-                }
+//            apiHelper.getDebutPatterns()
+//                .collect(){ result ->
+//                    _state.value = state.value.copy(
+//                        loading = false,
+//                        patterns = result.patterns.map{
+//                            it.toAppPattern()
+//                        }
+//                    )
+//                }
         }
     }
 

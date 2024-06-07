@@ -1,20 +1,13 @@
 package com.mataecheverry.project_ravelry.dades.autenticacio
 
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.util.Log
-import androidx.activity.result.ActivityResultLauncher
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
-import com.mataecheverry.project_ravelry.dades.xarxa.api.auth.RavelryAuthService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 
 sealed class AuthReply<out T>{
@@ -93,53 +86,54 @@ class AuthManager (private val context: Context) {
     //endregion
 
 
-    suspend fun iniciDeSessioAmbRavelry(launcherIniciDeSessioAmbRavelry: ActivityResultLauncher<Intent>) {
-        val intent = Intent(
-            //const val LOGIN_URL = "https://www.ravelry.com/oauth2/auth."
-            /** CAL CONTROL DE LA REDIRECT URI :) */
-            Intent.ACTION_VIEW, Uri.parse(
-                "$LOGIN_URL?response_type=code&client_id=$CLIENT_ID&redirect_uri=${"https://ravelschool-bc44d.firebaseapp.com/__/auth/handler"}&state=sheepbaa&scope=offline"
-            )
-        )
-        launcherIniciDeSessioAmbRavelry.launch(intent)
-        handleIntent(intent)
-    }
 
-    suspend fun handleIntent(intent: Intent): AuthReply<String> {
-        return withContext(Dispatchers.IO) {
-            intent.data?.let { uri ->
-                val code = uri.getQueryParameter("code")
-                if (code != null) {
-                    val builder = Retrofit.Builder()
-                        .baseUrl("https://www.ravelry.com/")
-                        .addConverterFactory(GsonConverterFactory.create())
-
-                    val retrofit = builder.build()
-                    val ravClient: RavelryAuthService = retrofit.create(RavelryAuthService::class.java)
-
-                    try {
-                        val response = ravClient.getAccessToken(
-                            clientId = CLIENT_ID,
-                            clientSecret = CLIENT_SECRET,
-                            code = code,
-                            redirectUri = CALLBACK
-                        )
-                        if (response.isSuccessful) {
-                            val accessToken = response.body()?.accessToken ?: "No token received"
-                            Log.d("AccessToken", accessToken)
-                            AuthReply.Success(accessToken)
-                        } else {
-                            AuthReply.Failed("Failed to retrieve token")
-                        }
-                    } catch (e: Exception) {
-                        AuthReply.Failed("Error retrieving token: ${e.message}")
-                    }
-                } else {
-                    AuthReply.Failed("Authorization code not found in intent")
-                }
-            } ?: AuthReply.Failed("Intent data is null")
-        }
-    }
+//    suspend fun iniciDeSessioAmbRavelry(launcherIniciDeSessioAmbRavelry: ActivityResultLauncher<Intent>) {
+//        val intent = Intent(
+//            //const val LOGIN_URL = "https://www.ravelry.com/oauth2/auth."
+//            /** CAL CONTROL DE LA REDIRECT URI :) */
+//            Intent.ACTION_VIEW, Uri.parse(
+//                "$LOGIN_URL?response_type=code&client_id=$CLIENT_ID&redirect_uri=${"https://ravelschool-bc44d.firebaseapp.com/__/auth/handler"}&state=sheepbaa&scope=offline"
+//            )
+//        )
+//        launcherIniciDeSessioAmbRavelry.launch(intent)
+//        handleIntent(intent)
+//    }
+//
+//    suspend fun handleIntent(intent: Intent): AuthReply<String> {
+//        return withContext(Dispatchers.IO) {
+//            intent.data?.let { uri ->
+//                val code = uri.getQueryParameter("code")
+//                if (code != null) {
+//                    val builder = Retrofit.Builder()
+//                        .baseUrl("https://www.ravelry.com/")
+//                        .addConverterFactory(GsonConverterFactory.create())
+//
+//                    val retrofit = builder.build()
+//                    val ravClient: RavelryAuthService = retrofit.create(RavelryAuthService::class.java)
+//
+//                    try {
+//                        val response = ravClient.getAccessToken(
+//                            clientId = CLIENT_ID,
+//                            clientSecret = CLIENT_SECRET,
+//                            code = code,
+//                            redirectUri = CALLBACK
+//                        )
+//                        if (response.isSuccessful) {
+//                            val accessToken = response.body()?.accessToken ?: "No token received"
+//                            Log.d("AUTHMANAGER", "handle intent $accessToken")
+//                            AuthReply.Success(accessToken)
+//                        } else {
+//                            AuthReply.Failed("Failed to retrieve token")
+//                        }
+//                    } catch (e: Exception) {
+//                        AuthReply.Failed("Error retrieving token: ${e.message}")
+//                    }
+//                } else {
+//                    AuthReply.Failed("Authorization code not found in intent")
+//                }
+//            } ?: AuthReply.Failed("Intent data is null")
+//        }
+//    }
 }
 
 

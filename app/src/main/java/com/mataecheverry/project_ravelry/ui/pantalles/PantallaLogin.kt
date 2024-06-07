@@ -1,9 +1,6 @@
 package com.mataecheverry.project_ravelry.ui.pantalles
 
 import android.app.Activity
-import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -46,11 +43,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import com.mataecheverry.project_ravelry.MainActivity
 import com.mataecheverry.project_ravelry.R
 import com.mataecheverry.project_ravelry.dades.autenticacio.AuthManager
 import com.mataecheverry.project_ravelry.dades.autenticacio.AuthReply
-import com.mataecheverry.project_ravelry.dades.xarxa.api.RavelryClient
 import com.mataecheverry.project_ravelry.models.app_models.AppUser
 import com.mataecheverry.project_ravelry.ui.viewmodels.PantallaLoginViewModel
 import kotlinx.coroutines.launch
@@ -61,7 +56,6 @@ import kotlinx.coroutines.tasks.await
 
 @Composable
 fun PantallaLogin(
-    mainActivity: MainActivity,
     authManager: AuthManager,
     viewModel: PantallaLoginViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     goToRegister: () -> Unit,
@@ -78,36 +72,28 @@ fun PantallaLogin(
     var checked by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf(false) }
     var errorMessege by remember { mutableStateOf("") }
-    val context = LocalContext.current as MainActivity
+    val context = LocalContext.current
     val area = rememberCoroutineScope()
 
-
-    val openIdSignInLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val intent = result.data
-            if (intent != null) {
-                viewModel.handleAuthResponse(intent,
-                    onSuccess = { accessToken ->
-                        // Store the token and navigate to the home screen
-                        RavelryClient.accessToken = accessToken
-                       goToHome()
-                    },
-                    onError = { errorMessage ->
-                        // Handle the error
-                        Log.d("ERROR_LOGIN", errorMessage)
-                        error = true
-                    }
-                )
-            } else {
-                Log.d("ERROR_LOGIN", "Intent data is null")
-                error = true
-            }
-        } else {
-            Log.d("ERROR_LOGIN", "Authentication failed")
-            error = true
-        }
-    }
+    val activity = context as? Activity
+//
+//    val openIdSignInLauncher = rememberLauncherForActivityResult(
+//            contract = ActivityResultContracts.StartActivityForResult()
+//            ) { result ->
+//        if (result.resultCode == Activity.RESULT_OK) {
+//            val intent = result.data
+//            if (intent != null) {
+//                viewModel.handleAuthResponse(intent, { accessToken ->
+//                    RavelryClient.accessToken = accessToken
+//                    goToHome()
+//                }, { error ->
+//                    Log.d("LOGIN", "Launcher error: $error")
+//                })
+//            } else {
+//                Log.d("LOGIN", "Launcher sign in failed: ${result.resultCode}")
+//            }
+//        }
+//    }
 
     Column(
         modifier = Modifier
@@ -201,12 +187,6 @@ fun PantallaLogin(
                     Button(
                         onClick = {
                                   area.launch {
-                                      emailAndPasswordLogin(
-                                          authManager,
-                                          email,
-                                          password,
-                                          goToHome
-                                      )
                                       goToHome()
                                   }
                         },
@@ -225,9 +205,7 @@ fun PantallaLogin(
                 BotoXXSS(
                     onClick =
                     {
-                        area.launch {
-                            authManager.iniciDeSessioAmbRavelry(openIdSignInLauncher)
-                        }
+                        //viewModel.startSignInWithRavelry(openIdSignInLauncher)
                         goToHome()
                     },
                     icon = R.drawable.typeselectedstateenabled,

@@ -1,13 +1,11 @@
 package com.mataecheverry.project_ravelry.models.app_models
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.mataecheverry.project_ravelry.models.api_models.FirstPhoto
 import com.mataecheverry.project_ravelry.models.api_models.PatternSource
 import com.mataecheverry.project_ravelry.models.api_models.User
 
 //Recordar que nostre AppPattern és molt complet perquè la referència és Pattern (Full) a la documentació de ravelry)
-data class AppPattern @RequiresApi(Build.VERSION_CODES.O) constructor(
+data class AppPattern(
     var id: Int = 0,
     var name: String = "",
     var craft: String = "",

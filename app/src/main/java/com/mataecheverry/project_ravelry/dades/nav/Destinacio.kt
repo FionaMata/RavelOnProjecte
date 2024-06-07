@@ -15,7 +15,7 @@ enum class NavigationCat(
 ){
     Login ("Login", R.drawable.user, R.string.login),
     Register("Registre", R.drawable.user, R.string.register),
-    Recover("Recover", R.drawable.typeselectedstateenabled, R.string.recover),
+    Recover("Password recovery", R.drawable.typeselectedstateenabled, R.string.recover),
     Home("Home", R.drawable.home, R.string.home),
     Search("Search", R.drawable.search, R.string.search),
     Patterns("Patterns", R.drawable.fakeyarn, R.string.patterns),

@@ -24,9 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -34,8 +32,6 @@ import com.mataecheverry.project_ravelry.dades.autenticacio.AuthManager
 import com.mataecheverry.project_ravelry.dades.xarxa.firebase.FirestoreManager
 import com.mataecheverry.project_ravelry.models.app_models.AppPattern
 import com.mataecheverry.project_ravelry.ui.viewmodels.ViewModelHome
-
-
 
 
 @Composable
@@ -55,7 +51,7 @@ fun PantallaHome(
     val tabs = listOf("Debut Patterns", "Hot Right Now", "You've Looked At...")
 
     viewModel.checkForActiveSession()
-    authManager.tancaSessio()
+    //authManager.tancaSessio()
 
 
     Column(
